@@ -1,5 +1,3 @@
-
-
 /* bubbleChart creation function. Returns a function that will
  * instantiate a new bubble chart given a DOM element to display
  * it in and a dataset to visualize.
@@ -8,10 +6,50 @@
  * https://bost.ocks.org/mike/chart/
  *
  */
+  
+function ViewMode(button_id) {
+  var width = BUBBLE_PARAMETERS.width;
+  var height = BUBBLE_PARAMETERS.height;
+
+  // Find which button was pressed
+  var mode_index;
+  for(mode_index=0; mode_index<BUBBLE_PARAMETERS.modes.length; mode_index++) {
+    if(BUBBLE_PARAMETERS.modes[mode_index].button_id == button_id) {
+      break;
+    }
+  }
+  if(mode_index>=BUBBLE_PARAMETERS.modes.length) {
+    console.log("Error: can't find mode with button_id = ", button_id)
+  }
+  
+  var curMode = BUBBLE_PARAMETERS.modes[mode_index];
+  this.buttonId = curMode.button_id;
+  this.gridDimensions = curMode.grid_dimensions;
+  this.dataField = curMode.data_field;
+  this.labels = curMode.labels;
+  if (this.labels == null) { this.labels = [""]; }
+  this.size = this.labels.length;
+
+  
+  // Loop through all grid labels and assign the centre coordinates
+  this.gridCenters = {};
+  for(var i=0; i<this.size; i++) {
+    var cur_row = Math.floor(i / this.gridDimensions.columns);  // indexed starting at zero
+    var cur_col = i % this.gridDimensions.columns;  // indexed starting at zero
+    var xx = {
+      x: (2 * cur_col + 1) * (width / (this.gridDimensions.columns * 2)),
+      y: (2 * cur_row + 1) * (height / (this.gridDimensions.rows * 2))
+    };
+    this.gridCenters[this.labels[i]] = xx;
+    console.log("gridcentre", i, xx.x, xx.y);
+  }
+};
+
+
 function bubbleChart() {
   // Constants for sizing
-  var width = 940;
-  var height = 600;
+  var width = BUBBLE_PARAMETERS.width;
+  var height = BUBBLE_PARAMETERS.height;
 
   // tooltip for mouseover functionality
   var tooltip = floatingTooltip('gates_tooltip', 240);
@@ -20,18 +58,11 @@ function bubbleChart() {
   // on which view mode is selected.
   var center = { x: width / 2, y: height / 2 };
 
-  var yearCenters = {
-    2008: { x: width / 3, y: height / 2 },
-    2009: { x: width / 2, y: height / 2 },
-    2010: { x: 2 * width / 3, y: height / 2 }
-  };
-
-  // X locations of the year titles.
-  var yearsTitleX = {
-    2008: 160,
-    2009: width / 2,
-    2010: width - 160
-  };
+  // Start us off in the first mode (corresponding to the first button)
+  this.currentMode = new ViewMode(BUBBLE_PARAMETERS.modes[0].button_id);
+  // DEBUG
+  console.debug("gridLabels", this.currentMode.labels);
+  console.debug("gridCenters", this.currentMode.gridCenters);
 
   // Used when setting up force and
   // moving around nodes
@@ -44,7 +75,7 @@ function bubbleChart() {
 
   // Charge function that is called for each node.
   // Charge is proportional to the diameter of the
-  // circle (which is stored in the radius attribute
+  // circle (which is stored in the scaled_radius attribute
   // of the circle's associated data.
   // This is done to allow for accurate collision
   // detection with nodes of different sizes.
@@ -52,7 +83,7 @@ function bubbleChart() {
   // Dividing by 8 scales down the charge to be
   // appropriate for the visualization dimensions.
   function charge(d) {
-    return -Math.pow(d.radius, 2.0) / 8;
+    return -Math.pow(d.scaled_radius, 2.0) / 8;
   }
 
   // Here we create a force layout and
@@ -75,7 +106,7 @@ function bubbleChart() {
   // Sizes bubbles based on their area instead of raw radius
   var radiusScale = d3.scale.pow()
     .exponent(0.5)
-    .range([2, 85]);
+    .range([2, 50]);
 
   /*
    * This data manipulation function takes the raw data from
@@ -93,22 +124,27 @@ function bubbleChart() {
     // Use map() to convert raw data into node data.
     // Checkout http://learnjsdata.com/ for more on
     // working with data.
-    var myNodes = rawData.map(function (d) {
-      return {
-        id: d.id,
-        radius: radiusScale(+d.total_amount),
-        value: d.total_amount,
-        name: d.grant_title,
-        org: d.organization,
-        group: d.group,
-        year: d.start_year,
-        x: Math.random() * 900,
-        y: Math.random() * 800
+    var myNodes = rawData.map(function (data_row) {
+      node = {
+        id: data_row.id,
+        scaled_radius: radiusScale(+data_row[BUBBLE_PARAMETERS.radius_field]),
+        actual_radius: +data_row[BUBBLE_PARAMETERS.radius_field],
+        fill_color_group: data_row[BUBBLE_PARAMETERS.fill_color.data_field],
+        // Put each node initially in a random location
+        x: Math.random() * BUBBLE_PARAMETERS.width,
+        y: Math.random() * BUBBLE_PARAMETERS.height
       };
+      for(var key in data_row) {
+        // Skip loop if the property is from prototype
+        if (!data_row.hasOwnProperty(key)) continue;
+        node[key] = data_row[key];
+      }
+      
+      return node;
     });
 
     // sort them to prevent occlusion of smaller nodes.
-    myNodes.sort(function (a, b) { return b.value - a.value; });
+    myNodes.sort(function (a, b) { return b.actual_radius - a.actual_radius; });
 
     return myNodes;
   }
@@ -127,10 +163,10 @@ function bubbleChart() {
    * a d3 loading function like d3.csv.
    */
   var chart = function chart(selector, rawData) {
-    // Use the max total_amount in the data as the max in the scale's domain
-    // note we have to ensure the total_amount is a number by converting it
+    // Use the max radius in the data as the max in the scale's domain
+    // note we have to ensure the radius is a number by converting it
     // with `+`.
-    var maxAmount = d3.max(rawData, function (d) { return +d.total_amount; });
+    var maxAmount = d3.max(rawData, function (d) { return +d[BUBBLE_PARAMETERS.radius_field]; });
     radiusScale.domain([0, maxAmount]);
 
     nodes = createNodes(rawData);
@@ -154,46 +190,44 @@ function bubbleChart() {
     bubbles.enter().append('circle')
       .classed('bubble', true)
       .attr('r', 0)
-      .attr('fill', function (d) { return fillColor(d.group); })
-      .attr('stroke', function (d) { return d3.rgb(fillColor(d.group)).darker(); })
+      .attr('fill', function (d) { return fillColor(d.fill_color_group); })
+      .attr('stroke', function (d) { return d3.rgb(fillColor(d.fill_color_group)).darker(); })
       .attr('stroke-width', 2)
-      .on('mouseover', showDetail)
-      .on('mouseout', hideDetail);
+      .on('mouseover', showTooltip)
+      .on('mouseout', hideTooltip);
 
     // Fancy transition to make bubbles appear, ending with the
     // correct radius
     bubbles.transition()
       .duration(2000)
-      .attr('r', function (d) { return d.radius; });
+      .attr('r', function (d) { return d.scaled_radius; });
 
     // Set initial layout to single group.
-    groupBubbles();
+    arrangeBubbles();
   };
 
   /*
-   * Sets visualization in "single group mode".
-   * The year labels are hidden and the force layout
-   * tick function is set to move all nodes to the
-   * center of the visualization.
+   * Sets visualization to the new target.
+   * The force layout tick function is set 
+   * to move nodes to the center of their
+   * respective targets.
    */
-  function groupBubbles() {
-    hideYears();
-
+  function arrangeBubbles() {
     force.on('tick', function (e) {
-      bubbles.each(moveToCenter(e.alpha))
+      bubbles.each(moveBubbleToNewTarget(e.alpha))
         .attr('cx', function (d) { return d.x; })
         .attr('cy', function (d) { return d.y; });
     });
 
     force.start();
   }
-
+ 
   /*
-   * Helper function for "single group mode".
+   * Helper function for arrangeBubbles.
    * Returns a function that takes the data for a
    * single node and adjusts the position values
-   * of that node to move it toward the center of
-   * the visualization.
+   * of that node to move it the center of the group
+   * for that node.
    *
    * Positioning is adjusted by the force layout's
    * alpha parameter which gets smaller and smaller as
@@ -202,126 +236,135 @@ function bubbleChart() {
    * its destination, and so allows other forces like the
    * node's charge force to also impact final location.
    */
-  function moveToCenter(alpha) {
-    return function (d) {
-      d.x = d.x + (center.x - d.x) * damper * alpha;
-      d.y = d.y + (center.y - d.y) * damper * alpha;
+  parent = this
+  function moveBubbleToNewTarget(alpha) {
+    return function (node) {
+      var target;
+      if(parent.currentMode.size == 1) {
+        target = parent.currentMode.gridCenters[""];
+        //console.log("targets size 1, so target is ", target)
+      } else {
+        // If the grid size is greater than 1, look up the appropriate target
+        // coordinate using the relevant node_tag for the mode we are in
+        // e.g. if we are in "years" mode, look up the node's year (e.g. 2007) and have
+        //      that be the node_tag we use to look up the grid center
+        //      (e.g. 2007's center is x=140, y=400)
+        //console.log("button_id is ", parent.currentMode.buttonId) // DEBUG
+        node_tag = node[parent.currentMode.dataField]
+        //console.log("node tag is ", node_tag) // DEBUG
+        target = parent.currentMode.gridCenters[node_tag];
+        //console.log("targets size >1, so target is ", target) // DEBUG
+      }
+      node.x = node.x + (target.x - node.x) * damper * alpha * 1.1;
+      node.y = node.y + (target.y - node.y) * damper * alpha * 1.1;
     };
   }
 
   /*
-   * Sets visualization in "split by year mode".
-   * The year labels are shown and the force layout
-   * tick function is set to move nodes to the
-   * yearCenter of their data's year.
+   * Shows lables for each of the positions in the grid.
    */
-  function splitBubbles() {
-    showYears();
+  parent = this
+  function showLabels() {
+    console.log("Show bubble group labels");
 
-    force.on('tick', function (e) {
-      bubbles.each(moveToYears(e.alpha))
-        .attr('cx', function (d) { return d.x; })
-        .attr('cy', function (d) { return d.y; });
-    });
+    var currentLabels = parent.currentMode.labels; 
+    var bubble_group_labels = svg.selectAll('.bubble_group_label')
+      .data(currentLabels);
 
-    force.start();
-  }
-
-  /*
-   * Helper function for "split by year mode".
-   * Returns a function that takes the data for a
-   * single node and adjusts the position values
-   * of that node to move it the year center for that
-   * node.
-   *
-   * Positioning is adjusted by the force layout's
-   * alpha parameter which gets smaller and smaller as
-   * the force layout runs. This makes the impact of
-   * this moving get reduced as each node gets closer to
-   * its destination, and so allows other forces like the
-   * node's charge force to also impact final location.
-   */
-  function moveToYears(alpha) {
-    return function (d) {
-      var target = yearCenters[d.year];
-      d.x = d.x + (target.x - d.x) * damper * alpha * 1.1;
-      d.y = d.y + (target.y - d.y) * damper * alpha * 1.1;
-    };
-  }
-
-  /*
-   * Hides Year title displays.
-   */
-  function hideYears() {
-    svg.selectAll('.year').remove();
-  }
-
-  /*
-   * Shows Year title displays.
-   */
-  function showYears() {
-    // Another way to do this would be to create
-    // the year texts once and then just hide them.
-    var yearsData = d3.keys(yearsTitleX);
-    var years = svg.selectAll('.year')
-      .data(yearsData);
-
-    years.enter().append('text')
-      .attr('class', 'year')
-      .attr('x', function (d) { return yearsTitleX[d]; })
-      .attr('y', 40)
+    var grid_element_height = BUBBLE_PARAMETERS.height / (parent.currentMode.size * 2);
+      
+    bubble_group_labels.enter().append('text')
+      .attr('class', 'bubble_group_label')
+      .attr('x', function (d) { return parent.currentMode.gridCenters[d].x; })
+      .attr('y', function (d) { return parent.currentMode.gridCenters[d].y - grid_element_height; })
+      //.attr('y', 40)
       .attr('text-anchor', 'middle')
       .text(function (d) { return d; });
-  }
-
-
-  /*
-   * Function called on mouseover to display the
-   * details of a bubble in the tooltip.
-   */
-  function showDetail(d) {
-    // change outline to indicate hover state.
-    d3.select(this).attr('stroke', 'black');
-
-    var content = '<span class="name">Title: </span><span class="value">' +
-                  d.name +
-                  '</span><br/>' +
-                  '<span class="name">Amount: </span><span class="value">$' +
-                  addCommas(d.value) +
-                  '</span><br/>' +
-                  '<span class="name">Year: </span><span class="value">' +
-                  d.year +
-                  '</span>';
-    tooltip.showTooltip(content, d3.event);
-  }
-
-  /*
-   * Hides tooltip
-   */
-  function hideDetail(d) {
-    // reset outline
-    d3.select(this)
-      .attr('stroke', d3.rgb(fillColor(d.group)).darker());
-
-    tooltip.hideTooltip();
   }
 
   /*
    * Externally accessible function (this is attached to the
    * returned chart function). Allows the visualization to toggle
-   * between "single group" and "split by year" modes.
+   * between display modes.
    *
-   * displayName is expected to be a string and either 'year' or 'all'.
+   * buttonId is expected to be a string corresponding to one of the modes.
    */
-  chart.toggleDisplay = function (displayName) {
-    if (displayName === 'year') {
-      splitBubbles();
-    } else {
-      groupBubbles();
+  parent = this
+  chart.switchMode = function (buttonId) {
+    // Get data on the new mode we have just switched to
+    parent.currentMode = new ViewMode(buttonId)
+
+    console.log("parent currentMode size", parent.currentMode.size)
+
+    // Remove current labels
+    svg.selectAll('.bubble_group_label').remove();
+    // Show labels, if we have more than one category to label
+    if (parent.currentMode.size > 1) {
+      showLabels();
     }
+
+    // Move the bubbles to their new locations
+    arrangeBubbles();
   };
 
+  /*
+   * Helper function to generate the tooltip content
+   * 
+   * Parameters: d, a dict from the node
+   * Returns: a string representing the formatted HTML to display
+   */
+  function tooltipContent(d) {
+    var content = ''
 
+    // Loop through all lines we want displayed in the tooltip
+    for(var i=0; i<BUBBLE_PARAMETERS.tooltip.length; i++) {
+      var cur_tooltip = BUBBLE_PARAMETERS.tooltip[i];
+
+      var value_formatted = '';
+      // If the value is currency, add a '$' in front
+      if ("currency" in cur_tooltip && cur_tooltip.currency) {
+        value_formatted += '$'
+      }
+      // Most large numerical values should have comma separators, e.g. $1,000.
+      // If we asked for a comma separator, add one.
+      if ("add_commas" in cur_tooltip && cur_tooltip.add_commas) {
+        value_formatted += addCommas(d[cur_tooltip.data_field]);
+      } else {
+        value_formatted += d[cur_tooltip.data_field];
+      }
+      
+      // If there was a previous tooltip line, add a newline separator
+      if (i > 0) {
+        content += '<br/>';
+      }
+      content += '<span class="name">'  + cur_tooltip.title + ': </span>';
+      content += '<span class="value">' + value_formatted   + '</span>';
+    }    
+    
+    return content;
+  }
+
+  /*
+   * Function called on mouseover to display the
+   * details of a bubble in the tooltip.
+   */
+  function showTooltip(d) {
+    // Change outline to indicate hover state.
+    d3.select(this).attr('stroke', 'black');
+    tooltip.showTooltip(tooltipContent(d), d3.event);
+  }
+
+  /*
+   * Hide tooltip
+   */
+  function hideTooltip(d) {
+    // reset outline
+    d3.select(this)
+      .attr('stroke', d3.rgb(fillColor(d.fill_color_group)).darker());
+
+    tooltip.hideTooltip();
+  }
+  
   // return the chart function from closure.
   return chart;
 }
@@ -337,7 +380,7 @@ var myBubbleChart = bubbleChart();
  * Function called once data is loaded from CSV.
  * Calls bubble chart function to display inside #vis div.
  */
-function display(error, data) {
+function displayBubblechart(error, data) {
   if (error) {
     console.log(error);
   }
@@ -354,18 +397,16 @@ function setupButtons() {
     .on('click', function () {
       // Remove active class from all buttons
       d3.selectAll('.button').classed('active', false);
-      // Find the button just clicked
-      var button = d3.select(this);
 
-      // Set it as the active button
-      button.classed('active', true);
+      // Set the button just clicked to active
+      d3.select(this).classed('active', true);
 
       // Get the id of the button
-      var buttonId = button.attr('id');
+      var buttonId = d3.select(this).attr('id');
 
-      // Toggle the bubble chart based on
+      // Switch the bubble chart to the mode of
       // the currently clicked button.
-      myBubbleChart.toggleDisplay(buttonId);
+      myBubbleChart.switchMode(buttonId);
     });
 }
 
@@ -386,8 +427,31 @@ function addCommas(nStr) {
   return x1 + x2;
 }
 
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
+
+// Set the title
+document.title = BUBBLE_PARAMETERS.report_title;
+report_title.innerHTML = BUBBLE_PARAMETERS.report_title;
+// Set the footer
+document.getElementById("footer_text").innerHTML = BUBBLE_PARAMETERS.footer_text;
+
+// Create menu buttons
+for (i = 0; i<BUBBLE_PARAMETERS.modes.length; i++) {
+  var button_element = document.createElement("a");
+  button_element.href = "#";
+  if (i == 0) {
+    button_element.className = "button active";
+  } else {
+    button_element.className = "button";
+  }
+  button_element.id = BUBBLE_PARAMETERS.modes[i].button_id;
+  button_element.innerHTML = BUBBLE_PARAMETERS.modes[i].button_text;
+  document.getElementById("toolbar").appendChild(button_element);
+}
+
 // Load the data.
-d3.csv('data/gates_money.csv', display);
+d3.csv("data/" + BUBBLE_PARAMETERS.data_file, displayBubblechart);
 
 // setup the buttons.
 setupButtons();

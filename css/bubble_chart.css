@@ -22,10 +22,9 @@ a, a:visited, a:active {
   color: #fff;
 }
 
-
 #vis {
   width: 940px;
-  height: 600px;
+  height: 800px;
   clear: both;
   margin-bottom: 10px;
 }
@@ -34,7 +33,7 @@ a, a:visited, a:active {
   margin-top: 10px;
 }
 
-.year {
+.bubble_group_label {
   font-size: 21px;
   fill: #aaa;
   cursor: default;

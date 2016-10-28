@@ -2,6 +2,9 @@
 
 Creating Animated Bubble Charts using D3 in pure JavaScript.
 
+Based on Jim Vallandingham's work at https://github.com/vlandham/bubble_chart and described at http://vallandingham.me/bubble_charts_in_js.html
+
+Data source: https://fusiontables.google.com/DataSource?docid=1MYXX1aUrAW4CVWQwewqU4c6-Pti8Nk0BSklNYHY
 
 ## Description
 
