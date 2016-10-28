@@ -54,11 +54,19 @@ function bubbleChart() {
     .gravity(-0.01)
     .friction(0.9);
 
-
+  console.log()
+  
+  var color_groupsKeys = Object.keys(BUBBLE_PARAMETERS.fill_color.color_groups)
+  var color_groupsValues = []
+  for (var i=0; i<color_groupsKeys.length; i++) {
+    var key = color_groupsKeys[i]
+    color_groupsValues.push(BUBBLE_PARAMETERS.fill_color.color_groups[key])
+  }
+  
   // Nice looking colors - no reason to buck the trend
   var fillColor = d3.scale.ordinal()
-    .domain(['low', 'medium', 'high'])
-    .range(['#d84b2a', '#beccae', '#7aa25c']);
+    .domain(color_groupsKeys)
+    .range(color_groupsValues);
 
   // Sizes bubbles based on their area instead of raw radius
   var radiusScale = d3.scale.pow()

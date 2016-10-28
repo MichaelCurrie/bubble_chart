@@ -7,7 +7,7 @@ var BUBBLE_PARAMETERS = {
   "radius_field": "Population",
   "fill_color": {
     "data_field": "Density Level",
-    "colour_groups": {
+    "color_groups": {
       "low": "#d84b2a",
       "medium": "#beccae",
       "high": "#7aa25c"
@@ -16,7 +16,7 @@ var BUBBLE_PARAMETERS = {
   "tooltip": [
     {"title": "City", "data_field": "City"},
     {"title": "Country", "data_field": "Country"},
-    {"title": "Part of the World", "data_field": "Region", "add_commas": 0},
+    {"title": "Part of the World", "data_field": "Region"},
     {"title": "Population", "data_field": "Population", "add_commas": 1},
     {"title": "Area (km^2)", "data_field": "Area", "add_commas": 1},
     {"title": "Density (pop / km^2)", "data_field": "Density", "add_commas": 0}
