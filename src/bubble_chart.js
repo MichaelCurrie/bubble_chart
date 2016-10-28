@@ -6,45 +6,6 @@
  * https://bost.ocks.org/mike/chart/
  *
  */
-  
-function ViewMode(button_id) {
-  var width = BUBBLE_PARAMETERS.width;
-  var height = BUBBLE_PARAMETERS.height;
-
-  // Find which button was pressed
-  var mode_index;
-  for(mode_index=0; mode_index<BUBBLE_PARAMETERS.modes.length; mode_index++) {
-    if(BUBBLE_PARAMETERS.modes[mode_index].button_id == button_id) {
-      break;
-    }
-  }
-  if(mode_index>=BUBBLE_PARAMETERS.modes.length) {
-    console.log("Error: can't find mode with button_id = ", button_id)
-  }
-  
-  var curMode = BUBBLE_PARAMETERS.modes[mode_index];
-  this.buttonId = curMode.button_id;
-  this.gridDimensions = curMode.grid_dimensions;
-  this.dataField = curMode.data_field;
-  this.labels = curMode.labels;
-  if (this.labels == null) { this.labels = [""]; }
-  this.size = this.labels.length;
-
-  
-  // Loop through all grid labels and assign the centre coordinates
-  this.gridCenters = {};
-  for(var i=0; i<this.size; i++) {
-    var cur_row = Math.floor(i / this.gridDimensions.columns);  // indexed starting at zero
-    var cur_col = i % this.gridDimensions.columns;  // indexed starting at zero
-    var xx = {
-      x: (2 * cur_col + 1) * (width / (this.gridDimensions.columns * 2)),
-      y: (2 * cur_row + 1) * (height / (this.gridDimensions.rows * 2))
-    };
-    this.gridCenters[this.labels[i]] = xx;
-    console.log("gridcentre", i, xx.x, xx.y);
-  }
-};
-
 
 function bubbleChart() {
   // Constants for sizing
@@ -60,13 +21,9 @@ function bubbleChart() {
 
   // Start us off in the first mode (corresponding to the first button)
   this.currentMode = new ViewMode(BUBBLE_PARAMETERS.modes[0].button_id);
-  // DEBUG
-  console.debug("gridLabels", this.currentMode.labels);
-  console.debug("gridCenters", this.currentMode.gridCenters);
 
-  // Used when setting up force and
-  // moving around nodes
-  var damper = 0.102;
+  // Used when setting up force and moving around nodes
+  var DAMPER = 0.102 * 1.1;
 
   // These will be set in create_nodes and create_vis
   var svg = null;
@@ -202,7 +159,7 @@ function bubbleChart() {
       .duration(2000)
       .attr('r', function (d) { return d.scaled_radius; });
 
-    // Set initial layout to single group.
+    // Set initial layout
     arrangeBubbles();
   };
 
@@ -214,6 +171,7 @@ function bubbleChart() {
    */
   function arrangeBubbles() {
     force.on('tick', function (e) {
+      //console.log("alpha", e.alpha * DAMPER) // DEBUG
       bubbles.each(moveBubbleToNewTarget(e.alpha))
         .attr('cx', function (d) { return d.x; })
         .attr('cy', function (d) { return d.y; });
@@ -255,13 +213,13 @@ function bubbleChart() {
         target = parent.currentMode.gridCenters[node_tag];
         //console.log("targets size >1, so target is ", target) // DEBUG
       }
-      node.x = node.x + (target.x - node.x) * damper * alpha * 1.1;
-      node.y = node.y + (target.y - node.y) * damper * alpha * 1.1;
+      node.x += (target.x - node.x) * alpha * DAMPER;
+      node.y += (target.y - node.y) * alpha * DAMPER;
     };
   }
 
   /*
-   * Shows lables for each of the positions in the grid.
+   * Shows labels for each of the positions in the grid.
    */
   parent = this
   function showLabels() {
@@ -271,15 +229,37 @@ function bubbleChart() {
     var bubble_group_labels = svg.selectAll('.bubble_group_label')
       .data(currentLabels);
 
-    var grid_element_height = BUBBLE_PARAMETERS.height / (parent.currentMode.size * 2);
+    var grid_element_half_height = BUBBLE_PARAMETERS.height / (parent.currentMode.gridDimensions.rows * 2);
       
     bubble_group_labels.enter().append('text')
       .attr('class', 'bubble_group_label')
       .attr('x', function (d) { return parent.currentMode.gridCenters[d].x; })
-      .attr('y', function (d) { return parent.currentMode.gridCenters[d].y - grid_element_height; })
-      //.attr('y', 40)
-      .attr('text-anchor', 'middle')
+      .attr('y', function (d) { return parent.currentMode.gridCenters[d].y - grid_element_half_height; })
+      .attr('text-anchor', 'middle')        // centre the text
+      .attr('dominant-baseline', 'hanging') // so the text is immediately below the bounding box, rather than above
       .text(function (d) { return d; });
+
+    var grid_element_half_height = BUBBLE_PARAMETERS.height / (parent.currentMode.gridDimensions.rows * 2);
+    var grid_element_half_width = BUBBLE_PARAMETERS.width / (parent.currentMode.gridDimensions.columns * 2);
+    
+    for (var key in currentMode.gridCenters) {
+      if (currentMode.gridCenters.hasOwnProperty(key)) {
+        var rectangle = svg.append("rect")
+          .attr("class", "mc_debug")
+          .attr("x", currentMode.gridCenters[key].x - grid_element_half_width)
+          .attr("y", currentMode.gridCenters[key].y - grid_element_half_height)
+          .attr("width", grid_element_half_width*2)
+          .attr("height", grid_element_half_height*2)
+          .attr("stroke", "red")
+          .attr("fill", "none");
+        var ellipse = svg.append("ellipse")
+          .attr("class", "mc_debug")
+          .attr("cx", currentMode.gridCenters[key].x)
+          .attr("cy", currentMode.gridCenters[key].y)
+          .attr("rx", 15)
+          .attr("ry", 10);
+      }
+    }    
   }
 
   /*
@@ -297,12 +277,15 @@ function bubbleChart() {
     console.log("parent currentMode size", parent.currentMode.size)
 
     // Remove current labels
-    svg.selectAll('.bubble_group_label').remove();
+    label_elements = svg.selectAll('.bubble_group_label').remove();
+    // Remove current debugging elements
+    debug_elements = svg.selectAll('.mc_debug').remove(); // DEBUG
+
     // Show labels, if we have more than one category to label
     if (parent.currentMode.size > 1) {
       showLabels();
     }
-
+    
     // Move the bubbles to their new locations
     arrangeBubbles();
   };
@@ -369,11 +352,69 @@ function bubbleChart() {
   return chart;
 }
 
+
+// Switch view modes
+function ViewMode(button_id) {
+  var width = BUBBLE_PARAMETERS.width;
+  var height = BUBBLE_PARAMETERS.height;
+
+  // Find which button was pressed
+  var mode_index;
+  for(mode_index=0; mode_index<BUBBLE_PARAMETERS.modes.length; mode_index++) {
+    if(BUBBLE_PARAMETERS.modes[mode_index].button_id == button_id) {
+      break;
+    }
+  }
+  if(mode_index>=BUBBLE_PARAMETERS.modes.length) {
+    console.log("Error: can't find mode with button_id = ", button_id)
+  }
+  
+  var curMode = BUBBLE_PARAMETERS.modes[mode_index];
+  this.buttonId = curMode.button_id;
+  this.gridDimensions = curMode.grid_dimensions;
+  this.dataField = curMode.data_field;
+  this.labels = curMode.labels;
+  if (this.labels == null) { this.labels = [""]; }
+  this.size = this.labels.length;
+
+  
+  // Loop through all grid labels and assign the centre coordinates
+  this.gridCenters = {};
+  for(var i=0; i<this.size; i++) {
+    var cur_row = Math.floor(i / this.gridDimensions.columns);  // indexed starting at zero
+    var cur_col = i % this.gridDimensions.columns;  // indexed starting at zero
+    var xx = {
+      x: (2 * cur_col + 1) * (width / (this.gridDimensions.columns * 2)),
+      y: (2 * cur_row + 1) * (height / (this.gridDimensions.rows * 2))
+    };
+    this.gridCenters[this.labels[i]] = xx;
+    console.log("gridcentre", i, xx.x, xx.y);
+  }
+};
+
+
+/*
+ * Helper function to convert a number into a string
+ * and add commas to it to improve presentation.
+ */
+function addCommas(nStr) {
+  nStr += '';
+  var x = nStr.split('.');
+  var x1 = x[0];
+  var x2 = x.length > 1 ? '.' + x[1] : '';
+  var rgx = /(\d+)(\d{3})/;
+  while (rgx.test(x1)) {
+    x1 = x1.replace(rgx, '$1' + ',' + '$2');
+  }
+
+  return x1 + x2;
+}
+
+
 /*
  * Below is the initialization code as well as some helper functions
  * to create a new bubble chart instance, load the data, and display it.
  */
-
 var myBubbleChart = bubbleChart();
 
 /*
@@ -410,30 +451,13 @@ function setupButtons() {
     });
 }
 
-/*
- * Helper function to convert a number into a string
- * and add commas to it to improve presentation.
- */
-function addCommas(nStr) {
-  nStr += '';
-  var x = nStr.split('.');
-  var x1 = x[0];
-  var x2 = x.length > 1 ? '.' + x[1] : '';
-  var rgx = /(\d+)(\d{3})/;
-  while (rgx.test(x1)) {
-    x1 = x1.replace(rgx, '$1' + ',' + '$2');
-  }
-
-  return x1 + x2;
-}
-
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
 
-// Set the title
+// Set title
 document.title = BUBBLE_PARAMETERS.report_title;
 report_title.innerHTML = BUBBLE_PARAMETERS.report_title;
-// Set the footer
+// Set footer
 document.getElementById("footer_text").innerHTML = BUBBLE_PARAMETERS.footer_text;
 
 // Create menu buttons
@@ -450,8 +474,13 @@ for (i = 0; i<BUBBLE_PARAMETERS.modes.length; i++) {
   document.getElementById("toolbar").appendChild(button_element);
 }
 
-// Load the data.
+// Load data
 d3.csv("data/" + BUBBLE_PARAMETERS.data_file, displayBubblechart);
 
-// setup the buttons.
+// Setup buttons
 setupButtons();
+
+// Click first button
+//document.getElementById(BUBBLE_PARAMETERS.modes[0].button_id).click();
+
+
