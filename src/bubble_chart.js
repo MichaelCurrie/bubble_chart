@@ -19,6 +19,9 @@ function bubbleChart() {
   // on which view mode is selected.
   var center = { x: width / 2, y: height / 2 };
 
+  // Start us off in the first mode (corresponding to the first button)
+  this.currentMode = new ViewMode(BUBBLE_PARAMETERS.modes[0].button_id);
+
   // Used when setting up force and moving around nodes
   var DAMPER = 0.102 * 1.1;
 
@@ -45,28 +48,14 @@ function bubbleChart() {
   // from above. This also sets some contants
   // to specify how the force layout should behave.
   // More configuration is done below.
-  this.forceSim = d3.forceSimulation()
-      .force("link", d3.forceLink().id(function(d) { return d.id; }))
-      .force("charge", d3.forceManyBody())
-      .force("center", d3.forceCenter(width / 2, height / 2));
+  var force = d3.layout.force()
+    .size([width, height])
+    .charge(charge)
+    .gravity(-0.01)
+    .friction(0.9);
 
-  console.log("forcedfsdfsdfsdfsSim", forceSim);
+  console.log()
   
-  // DEBUG
-  var chart = d3.select(".chart")
-  chart.append("g")
-    .append("text")
-    .text("Frequency");
-/*
-  var forceSim = d3.forceSimulation()
-    .force('link', d3.forceLink().id(function (d) { return d.ID; }))
-    .force("x", d3.forceX(width))
-    .force("y", d3.forceY(height))
-    .force("charge", d3.forceManyBody) // charge);
-    .force("center", d3.forceCenter(width/2, height/2))
-    //.gravity(-0.01)
-    .velocityDecay(0.9);    // Formerly .friction in d3v3
-  */
   var color_groupsKeys = Object.keys(BUBBLE_PARAMETERS.fill_color.color_groups)
   var color_groupsValues = []
   for (var i=0; i<color_groupsKeys.length; i++) {
@@ -75,28 +64,28 @@ function bubbleChart() {
   }
   
   // Nice looking colors - no reason to buck the trend
-  var fillColor = d3.scaleOrdinal()
+  var fillColor = d3.scale.ordinal()
     .domain(color_groupsKeys)
     .range(color_groupsValues);
 
   // Sizes bubbles based on their area instead of raw radius
-  var radiusScale = d3.scalePow()
+  var radiusScale = d3.scale.pow()
     .exponent(0.5)
-    .range([2, 50]); // TODO: fix the upper end of the range using the length of the data.
+    .range([2, 50]);
 
+  /*
+   * This data manipulation function takes the raw data from
+   * the CSV file and converts it into an array of node objects.
+   * Each node will store data and visualization values to visualize
+   * a bubble.
+   *
+   * rawData is expected to be an array of data objects, read in from
+   * one of d3's loading functions like d3.csv.
+   *
+   * This function returns the new node array, with a node in that
+   * array for each element in the rawData input.
+   */
   function createNodes(rawData) {
-    /*
-     * This data manipulation function takes the raw data from
-     * the CSV file and converts it into an array of node objects.
-     * Each node will store data and visualization values to visualize
-     * a bubble.
-     *
-     * rawData is expected to be an array of data objects, read in from
-     * one of d3's loading functions like d3.csv.
-     *
-     * This function returns the new node array, with a node in that
-     * array for each element in the rawData input.
-     */
     // Use map() to convert raw data into node data.
     // Checkout http://learnjsdata.com/ for more on
     // working with data.
@@ -125,26 +114,20 @@ function bubbleChart() {
     return myNodes;
   }
 
-  // Start us off in the first mode (corresponding to the first button)
-  // TODO: Remove this from here, and change arrangeBubbles() in the chart()
-  //       function to be switchMode instead, to simplify.
-  this.currentMode = new ViewMode(BUBBLE_PARAMETERS.modes[0].button_id);
-  
+  /*
+   * Main entry point to the bubble chart. This function is returned
+   * by the parent closure. It prepares the rawData for visualization
+   * and adds an svg element to the provided selector and starts the
+   * visualization creation process.
+   *
+   * selector is expected to be a DOM element or CSS selector that
+   * points to the parent element of the bubble chart. Inside this
+   * element, the code will add the SVG continer for the visualization.
+   *
+   * rawData is expected to be an array of data objects as provided by
+   * a d3 loading function like d3.csv.
+   */
   var chart = function chart(selector, rawData) {
-    /*
-     * Main entry point to the bubble chart. This function is returned
-     * by the parent closure. It prepares the rawData for visualization
-     * and adds an svg element to the provided selector and starts the
-     * visualization creation process.
-     *
-     * selector is expected to be a DOM element or CSS selector that
-     * points to the parent element of the bubble chart. Inside this
-     * element, the code will add the SVG continer for the visualization.
-     *
-     * rawData is expected to be an array of data objects as provided by
-     * a d3 loading function like d3.csv.
-     */
-
     // Use the max radius in the data as the max in the scale's domain
     // note we have to ensure the radius is a number by converting it
     // with `+`.
@@ -152,8 +135,8 @@ function bubbleChart() {
     radiusScale.domain([0, maxAmount]);
 
     nodes = createNodes(rawData);
-    // Set the forceSim's nodes to our newly created nodes array.
-    forceSim.nodes(nodes);
+    // Set the force's nodes to our newly created nodes array.
+    force.nodes(nodes);
 
     // Create a SVG element inside the provided selector
     // with desired size.
@@ -172,8 +155,6 @@ function bubbleChart() {
     bubbles.enter().append('circle')
       .classed('bubble', true)
       .attr('r', 0)
-      .attr('cx', 100)
-      .attr('cy', 100)
       .attr('fill', function (d) { return fillColor(d.fill_color_group); })
       .attr('stroke', function (d) { return d3.rgb(fillColor(d.fill_color_group)).darker(); })
       .attr('stroke-width', 2)
@@ -184,54 +165,45 @@ function bubbleChart() {
     // correct radius
     bubbles.transition()
       .duration(2000)
-      .attr('r', 1000); //function (d) { return d.scaled_radius; });
+      .attr('r', function (d) { return d.scaled_radius; });
 
-    console.log("forceSim", forceSim)
-    console.log("nodes", nodes)
-      
     // Set initial layout
     arrangeBubbles();
   };
 
-
+  /*
+   * Sets visualization to the new target.
+   * The force layout tick function is set 
+   * to move nodes to the center of their
+   * respective targets.
+   */
   function arrangeBubbles() {
-    /*
-     * Sets visualization to the new target.
-     * The forceSim layout tick function is set 
-     * to move nodes to the center of their
-     * respective targets.
-     */
-    console.log("setting tick function")
-    forceSim.on('tick',
-      function () {
-        //console.log("alpha", e.alpha * DAMPER) // DEBUG
-        bubbles.each(moveBubbleToNewTarget(this.alpha))
-          .attr('cx', function (d) { return d.x; })
-          .attr('cy', function (d) { return d.y; });
-      }
-    );
+    force.on('tick', function (e) {
+      //console.log("alpha", e.alpha * DAMPER) // DEBUG
+      bubbles.each(moveBubbleToNewTarget(e.alpha))
+        .attr('cx', function (d) { return d.x; })
+        .attr('cy', function (d) { return d.y; });
+    });
 
-    console.log("forceSim.restart();")
-    //forceSim.restart();
-    forceSim.alphaTarget(0.005).restart();
+    force.start();
   }
-
+ 
+  /*
+   * Helper function for arrangeBubbles.
+   * Returns a function that takes the data for a
+   * single node and adjusts the position values
+   * of that node to move it the center of the group
+   * for that node.
+   *
+   * Positioning is adjusted by the force layout's
+   * alpha parameter which gets smaller and smaller as
+   * the force layout runs. This makes the impact of
+   * this moving get reduced as each node gets closer to
+   * its destination, and so allows other forces like the
+   * node's charge force to also impact final location.
+   */
   parent = this
   function moveBubbleToNewTarget(alpha) {
-    /*
-     * Helper function for arrangeBubbles.
-     * Returns a function that takes the data for a
-     * single node and adjusts the position values
-     * of that node to move it the center of the group
-     * for that node.
-     *
-     * Positioning is adjusted by the force layout's
-     * alpha parameter which gets smaller and smaller as
-     * the force layout runs. This makes the impact of
-     * this moving get reduced as each node gets closer to
-     * its destination, and so allows other forces like the
-     * node's charge force to also impact final location.
-     */
     return function (node) {
       var target;
       if(parent.currentMode.size == 1) {
@@ -254,11 +226,11 @@ function bubbleChart() {
     };
   }
 
+  /*
+   * Shows labels for each of the positions in the grid.
+   */
   parent = this
   function showLabels() {
-    /*
-     * Shows labels for each of the positions in the grid.
-     */
     console.log("Show bubble group labels");
 
     var currentLabels = parent.currentMode.labels; 
@@ -298,15 +270,15 @@ function bubbleChart() {
     }    
   }
 
+  /*
+   * Externally accessible function (this is attached to the
+   * returned chart function). Allows the visualization to toggle
+   * between display modes.
+   *
+   * buttonId is expected to be a string corresponding to one of the modes.
+   */
   parent = this
   chart.switchMode = function (buttonId) {
-    /*
-     * Externally accessible function (this is attached to the
-     * returned chart function). Allows the visualization to toggle
-     * between display modes.
-     *
-     * buttonId is expected to be a string corresponding to one of the modes.
-     */
     // Get data on the new mode we have just switched to
     parent.currentMode = new ViewMode(buttonId)
 
@@ -326,13 +298,13 @@ function bubbleChart() {
     arrangeBubbles();
   };
 
+  /*
+   * Helper function to generate the tooltip content
+   * 
+   * Parameters: d, a dict from the node
+   * Returns: a string representing the formatted HTML to display
+   */
   function tooltipContent(d) {
-    /*
-     * Helper function to generate the tooltip content
-     * 
-     * Parameters: d, a dict from the node
-     * Returns: a string representing the formatted HTML to display
-     */
     var content = ''
 
     // Loop through all lines we want displayed in the tooltip
@@ -359,31 +331,28 @@ function bubbleChart() {
       content += '<span class="name">'  + cur_tooltip.title + ': </span>';
       content += '<span class="value">' + value_formatted   + '</span>';
     }    
-
+    
     return content;
   }
 
+  /*
+   * Function called on mouseover to display the
+   * details of a bubble in the tooltip.
+   */
   function showTooltip(d) {
-    /*
-     * Function called on mouseover to display the
-     * details of a bubble in the tooltip.
-     */
-    // Change the circle's outline to indicate hover state.
+    // Change outline to indicate hover state.
     d3.select(this).attr('stroke', 'black');
-
-    // Show the tooltip
     tooltip.showTooltip(tooltipContent(d), d3.event);
   }
 
+  /*
+   * Hide tooltip
+   */
   function hideTooltip(d) {
-    /*
-     * Hide tooltip
-     */
-    // Reset the circle's outline back to its original color.
-    var originalColor = d3.rgb(fillColor(d.fill_color_group)).darker()
-    d3.select(this).attr('stroke', originalColor);
+    // reset outline
+    d3.select(this)
+      .attr('stroke', d3.rgb(fillColor(d.fill_color_group)).darker());
 
-    // Hide the tooltip
     tooltip.hideTooltip();
   }
   
@@ -391,19 +360,9 @@ function bubbleChart() {
   return chart;
 }
 
-// OBJECT
+
+// Switch view modes
 function ViewMode(button_id) {
-  /* ViewMode: an object that has useful parameters for each view mode.
-   * initialize it with your desired view mode, then use its parameters.
-   * Attributes:
-   - mode_index (which button was pressed)
-   - buttonId   (which button was pressed)
-   - gridDimensions  e.g. {"rows": 10, "columns": 20}
-   - gridCenters     e.g. {"group1": {"x": 10, "y": 20}, ...}
-   - dataField  (string)
-   - labels   (an array)
-   - size     (number of groups)
-   */
   var width = BUBBLE_PARAMETERS.width;
   var height = BUBBLE_PARAMETERS.height;
 
@@ -442,11 +401,11 @@ function ViewMode(button_id) {
 };
 
 
+/*
+ * Helper function to convert a number into a string
+ * and add commas to it to improve presentation.
+ */
 function addCommas(nStr) {
-  /*
-   * Helper function to convert a number into a string
-   * and add commas to it to improve presentation.
-   */
   nStr += '';
   var x = nStr.split('.');
   var x1 = x[0];
@@ -459,14 +418,6 @@ function addCommas(nStr) {
   return x1 + x2;
 }
 
-/////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////
-
-// Set title
-document.title = BUBBLE_PARAMETERS.report_title;
-report_title.innerHTML = BUBBLE_PARAMETERS.report_title;
-// Set footer
-document.getElementById("footer_text").innerHTML = BUBBLE_PARAMETERS.footer_text;
 
 /*
  * Below is the initialization code as well as some helper functions
@@ -474,36 +425,27 @@ document.getElementById("footer_text").innerHTML = BUBBLE_PARAMETERS.footer_text
  */
 var myBubbleChart = bubbleChart();
 
+/*
+ * Function called once data is loaded from CSV.
+ * Calls bubble chart function to display inside #vis div.
+ */
+function displayBubblechart(error, data) {
+  if (error) {
+    console.log(error);
+  }
+
+  myBubbleChart('#vis', data);
+}
+
+/*
+ * Sets up the layout buttons to allow for toggling between view modes.
+ */
 function setupButtons() {
-  /*
-   * Sets up the layout buttons to allow for toggling between view modes.
-   */
-  // Create the buttons
-  // TODO: change this to use native d3js selection methods
-  for (i = 0; i<BUBBLE_PARAMETERS.modes.length; i++) {
-    var button_element = document.createElement("a");
-    button_element.href = "#";
-    if (i == 0) {
-      button_element.className = "button active";
-    } else {
-      button_element.className = "button";
-    }
-    button_element.id = BUBBLE_PARAMETERS.modes[i].button_id;
-    button_element.innerHTML = BUBBLE_PARAMETERS.modes[i].button_text;
-    document.getElementById("toolbar").appendChild(button_element);
-  }   
-  
-  // Handle button click
   d3.select('#toolbar')
     .selectAll('.button')
     .on('click', function () {
       // Remove active class from all buttons
       d3.selectAll('.button').classed('active', false);
-
-      var bubbles = d3.selectAll('.bubble')
-      bubbles.transition()
-        .duration(2000)
-        .attr('r', function (d) { return d.scaled_radius; });
 
       // Set the button just clicked to active
       d3.select(this).classed('active', true);
@@ -517,16 +459,29 @@ function setupButtons() {
     });
 }
 
-// TODO: turn this into an anonymous single-use function since it's very simple and only used once.
-function displayBubblechart(error, data) {
-  /*
-   * Function called once data is loaded from CSV.
-   * Calls bubble chart function to display inside #vis div.
-   */
-  if (error) { console.log(error); }
+/////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////
 
-  myBubbleChart('#vis', data);
+// Set title
+document.title = BUBBLE_PARAMETERS.report_title;
+report_title.innerHTML = BUBBLE_PARAMETERS.report_title;
+// Set footer
+document.getElementById("footer_text").innerHTML = BUBBLE_PARAMETERS.footer_text;
+
+// Create menu buttons
+for (i = 0; i<BUBBLE_PARAMETERS.modes.length; i++) {
+  var button_element = document.createElement("a");
+  button_element.href = "#";
+  if (i == 0) {
+    button_element.className = "button active";
+  } else {
+    button_element.className = "button";
+  }
+  button_element.id = BUBBLE_PARAMETERS.modes[i].button_id;
+  button_element.innerHTML = BUBBLE_PARAMETERS.modes[i].button_text;
+  document.getElementById("toolbar").appendChild(button_element);
 }
+
 // Load data
 d3.csv("data/" + BUBBLE_PARAMETERS.data_file, displayBubblechart);
 
