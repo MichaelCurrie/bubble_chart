@@ -45,13 +45,12 @@ function bubbleChart() {
   // from above. This also sets some contants
   // to specify how the force layout should behave.
   // More configuration is done below.
-  this.forceSim = d3.forceSimulation()
+  var forceSim = d3.forceSimulation()
       .force("link", d3.forceLink().id(function(d) { return d.id; }))
-      .force("charge", d3.forceManyBody())
+      .force("charge", charge)
+      //.force("gravity", -0.01)
       .force("center", d3.forceCenter(width / 2, height / 2));
 
-  console.log("forcedfsdfsdfsdfsSim", forceSim);
-  
   // DEBUG
   var chart = d3.select(".chart")
   chart.append("g")
@@ -180,12 +179,15 @@ function bubbleChart() {
       .on('mouseover', showTooltip)
       .on('mouseout', hideTooltip);
 
-    // Fancy transition to make bubbles appear, ending with the
-    // correct radius
+    bubbles = d3.selectAll('.bubble');
+
+    // Fancy transition to make bubbles appear, ending with // the correct radius
     bubbles.transition()
       .duration(2000)
-      .attr('r', 1000); //function (d) { return d.scaled_radius; });
+      .on("start", function (d) {console.log("gah");})
+      .attr('r', function (d) { return d.scaled_radius; });
 
+    console.log("bubbles", bubbles)
     console.log("forceSim", forceSim)
     console.log("nodes", nodes)
       
@@ -204,15 +206,17 @@ function bubbleChart() {
     console.log("setting tick function")
     forceSim.on('tick',
       function () {
-        //console.log("alpha", e.alpha * DAMPER) // DEBUG
-        bubbles.each(moveBubbleToNewTarget(this.alpha))
+        bubbles.each(moveBubbleToNewTarget(this.alpha()))
           .attr('cx', function (d) { return d.x; })
           .attr('cy', function (d) { return d.y; });
       }
     );
 
-    console.log("forceSim.restart();")
-    //forceSim.restart();
+    console.log("MOVING BUBBLES");
+    bubbles.each(moveBubbleToNewTarget(1))//.nodes()
+      .attr('cx', function (d) { return d.x; })
+      .attr('cy', function (d) { return d.y; });
+    
     forceSim.alphaTarget(0.005).restart();
   }
 
@@ -499,11 +503,6 @@ function setupButtons() {
     .on('click', function () {
       // Remove active class from all buttons
       d3.selectAll('.button').classed('active', false);
-
-      var bubbles = d3.selectAll('.bubble')
-      bubbles.transition()
-        .duration(2000)
-        .attr('r', function (d) { return d.scaled_radius; });
 
       // Set the button just clicked to active
       d3.select(this).classed('active', true);
