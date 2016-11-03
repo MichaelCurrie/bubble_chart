@@ -342,18 +342,14 @@ function bubbleChart() {
     // Loop through all lines we want displayed in the tooltip
     for(var i=0; i<BUBBLE_PARAMETERS.tooltip.length; i++) {
       var cur_tooltip = BUBBLE_PARAMETERS.tooltip[i];
+      var value_formatted;
 
-      var value_formatted = '';
-      // If the value is currency, add a '$' in front
-      if ("currency" in cur_tooltip && cur_tooltip.currency) {
-        value_formatted += '$'
-      }
-      // Most large numerical values should have comma separators, e.g. $1,000.
-      // If we asked for a comma separator, add one.
-      if ("add_commas" in cur_tooltip && cur_tooltip.add_commas) {
-        value_formatted += addCommas(d[cur_tooltip.data_field]);
+      // If a format was specified, use it
+      if ("format_string" in cur_tooltip) {
+        value_formatted = 
+          d3.format(cur_tooltip.format_string)(d[cur_tooltip.data_field]);
       } else {
-        value_formatted += d[cur_tooltip.data_field];
+        value_formatted = d[cur_tooltip.data_field];
       }
       
       // If there was a previous tooltip line, add a newline separator
@@ -446,23 +442,6 @@ function ViewMode(button_id) {
 };
 
 
-function addCommas(nStr) {
-  /*
-   * Helper function to convert a number into a string
-   * and add commas to it to improve presentation.
-   */
-  nStr += '';
-  var x = nStr.split('.');
-  var x1 = x[0];
-  var x2 = x.length > 1 ? '.' + x[1] : '';
-  var rgx = /(\d+)(\d{3})/;
-  while (rgx.test(x1)) {
-    x1 = x1.replace(rgx, '$1' + ',' + '$2');
-  }
-
-  return x1 + x2;
-}
-
 /////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -517,19 +496,17 @@ function setupButtons() {
 }
 
 // TODO: turn this into an anonymous single-use function since it's very simple and only used once.
-function displayBubblechart(error, data) {
-  /*
-   * Function called once data is loaded from CSV.
-   * Calls bubble chart function to display inside #vis div.
-   */
-  if (error) { console.log(error); }
 
-  myBubbleChart('#vis', data);
-}
 // Load data
-d3.csv("data/" + BUBBLE_PARAMETERS.data_file, displayBubblechart);
+d3.csv("data/" + BUBBLE_PARAMETERS.data_file, function (error, data) {
+    // Once the data is loaded...
+    
+    if (error) { console.log(error); }
+    // Display bubble chart inside the #vis div.
+    myBubbleChart('#vis', data);
+});
 
-// Setup buttons
+// As the data is being loaded: setup buttons
 setupButtons();
 
 // Click first button
