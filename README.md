@@ -2,22 +2,14 @@
 
 Creating Animated Bubble Charts using D3 in pure JavaScript.
 
-Based on Jim Vallandingham's work at https://github.com/vlandham/bubble_chart and described at http://vallandingham.me/bubble_charts_in_js.html
+Based directly on Jim Vallandingham's work at https://github.com/vlandham/bubble_chart and described at http://vallandingham.me/bubble_charts_in_js.html
 
-Data source: https://fusiontables.google.com/DataSource?docid=1MYXX1aUrAW4CVWQwewqU4c6-Pti8Nk0BSklNYHY
-
-## Description
-
-This repository contains code to create your own animated bubble chart. It is a
-functional remake of my [previous bubble chart code](https://github.com/vlandham/gates_bubbles),
-only now there is no [CoffeeScript](http://coffeescript.org/). Everything is written in
-plain old JavaScript. There isn't even a build step!
-
-It goes along with a remake of the tutorial here:
-
-A live version of this code is here:
-
-[http://vallandingham.me/bubble_chart/](http://vallandingham.me/bubble_chart/)
+Changes in my fork:
+- Reorganized the code
+- Generalized the code so that any number of groupings can be specified, with `bubble_parameters.js`
+- Upgraded d3.js from v3 to v4
+- Changed collision force model so circles don't overlap (inspired by https://bl.ocks.org/mbostock/31ce330646fa8bcb7289ff3b97aab3f5)
+- Changed example data, to largest cities of the world (since I data with multiple dimensions to demonstrate the grouping feature).  Source: https://fusiontables.google.com/DataSource?docid=1MYXX1aUrAW4CVWQwewqU4c6-Pti8Nk0BSklNYHY
 
 ## Running
 
@@ -31,25 +23,10 @@ So, to run this visualization locally, from the Terminal, navigate to the direct
 cd ~/code/path/to/bubble_chart
 ```
 
-Then start a webserver locally. If you are on a Linux or Mac, you should be able to use python's built in webserver:
+Then start a webserver locally. If you have Python installed, you should be able to use Python's built-in webserver:
 
 ```
-python -m SimpleHTTPServer 3000
-```
-
-Alternatively, I have switched to using node's [http-server](https://www.npmjs.com/package/http-server)
-for local hosting.
-
-Ensure you have the node package installed:
-
-```
-npm install -g http-server
-```
-
-And then run it in the root directory of the repository.
-
-```
-http-server
+python -m http.server 88880
 ```
 
 ## Caveats
