@@ -3,7 +3,7 @@ var BUBBLE_PARAMETERS = {
   "report_title": "Largest Cities of the World",
   "footer_text": "A demonstration of animated bubble charts in JavaScript and D3.js",
   "width": 940,
-  "height": 800,
+  "height": 900,
   "radius_field": "Population",
   "fill_color": {
     "data_field": "Density Level",
@@ -17,9 +17,9 @@ var BUBBLE_PARAMETERS = {
     {"title": "City", "data_field": "City"},
     {"title": "Country", "data_field": "Country"},
     {"title": "Part of the World", "data_field": "Region"},
-    {"title": "Population", "data_field": "Population", "add_commas": 1},
-    {"title": "Area (km^2)", "data_field": "Area", "add_commas": 1},
-    {"title": "Density (pop / km^2)", "data_field": "Density", "add_commas": 0}
+    {"title": "Population", "data_field": "Population", "format_string": ",.2r"},
+    {"title": "Area (km^2)", "data_field": "Area", "format_string": ",.2r"},
+    {"title": "Density (pop / km^2)", "data_field": "Density"}
   ],
   "modes": [
     {
