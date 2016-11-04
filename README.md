@@ -1,8 +1,10 @@
-# Animated Bubble Chart
+# Animated Bubble Charts
 
-Creating Animated Bubble Charts using D3 in JavaScript.
+Create animated bubble charts using D3.js.
 
-Based directly on Jim Vallandingham's work [in this repo](https://github.com/vlandham/bubble_chart) and described at [his blog](http://vallandingham.me/bubble_charts_in_js.html)
+![](bubble%20demo.gif?raw=true)
+
+Based directly on Jim Vallandingham's work [in this repo](https://github.com/vlandham/bubble_chart) and described at [his blog](http://vallandingham.me/bubble_charts_in_js.html).
 
 Changes in this fork:
 - Reorganized the code
@@ -10,8 +12,6 @@ Changes in this fork:
 - Upgraded d3.js from v3 to v4
 - Changed collision force model so circles don't overlap while moving (inspired by https://bl.ocks.org/mbostock/31ce330646fa8bcb7289ff3b97aab3f5)
 - Changed example data, to largest cities of the world (needed data with multiple dimensions to demonstrate the grouping feature).  Source: https://fusiontables.google.com/DataSource?docid=1MYXX1aUrAW4CVWQwewqU4c6-Pti8Nk0BSklNYHY
-
-![](bubble%20demo.gif?raw=true)
 
 ## Running
 
