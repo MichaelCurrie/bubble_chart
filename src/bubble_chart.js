@@ -10,43 +10,35 @@ function bubbleChart() {
     /* bubbleChart creation function. Returns a function that will
      * instantiate a new bubble chart given a DOM element to display
      * it in and a dataset to visualize.
-    */
-    // Constants for sizing
-    var width = BUBBLE_PARAMETERS.width;
-    var height = BUBBLE_PARAMETERS.height;
+     */
 
-    // Tooltip object for mouseover functionality
+    // Tooltip object for mouseover functionality, width 240
     var tooltip = floatingTooltip('bubble_chart_tooltip', 240);
-
-    // Locations to move bubbles towards, depending
-    // on which view mode is selected.
-    var center = { x: width / 2, y: height / 2 };
-
-    // SET COLOURS
-    var color_groupsKeys = Object.keys(BUBBLE_PARAMETERS.fill_color.color_groups)
-    var color_groupsValues = []
-    for (var i=0; i<color_groupsKeys.length; i++) {
-        var key = color_groupsKeys[i]
-        color_groupsValues.push(BUBBLE_PARAMETERS.fill_color.color_groups[key])
-    }
-    
-    // Nice looking colors - no reason to buck the trend
-    var fillColor = d3.scaleOrdinal()
-        .domain(color_groupsKeys)
-        .range(color_groupsValues);
-
-    // SCALE BUBBLE SIZES
-    // Using ^(0.5), size bubbles based on area instead of radius
-    var radiusScale = d3.scalePow()
-        .exponent(0.5)
-        .range([2, 25]);  // Range between 2 and 50 pixels
-
-    // These will be set in createNodes and create_vis
+    // These will be set in the `chart` function
     var svg = null;
     var bubbles = null;
     var forceSim = null;
+    var fillColorScale = null;
+    var radiusScale = null;
     var nodes = [];
 
+    function getFillColorScale() {
+        // Color scale
+        var color_groupsKeys = Object.keys(BUBBLE_PARAMETERS.fill_color.color_groups)
+        var color_groupsValues = []
+        for (var i=0; i<color_groupsKeys.length; i++) {
+            var key = color_groupsKeys[i]
+            color_groupsValues.push(BUBBLE_PARAMETERS.fill_color.color_groups[key])
+        }
+        
+        // Nice looking colors - no reason to buck the trend
+        var fillColorScale = d3.scaleOrdinal()
+            .domain(color_groupsKeys)
+            .range(color_groupsValues);
+
+        return fillColorScale;
+    }
+    
     function createNodes(rawData) {
         /*
          * This data manipulation function takes the raw data from
@@ -199,7 +191,7 @@ function bubbleChart() {
          * Hide tooltip
          */
         // Reset the circle's outline back to its original color.
-        var originalColor = d3.rgb(fillColor(d.fill_color_group)).darker()
+        var originalColor = d3.rgb(fillColorScale(d.fill_color_group)).darker()
         d3.select(this).attr('stroke', originalColor);
 
         // Hide the tooltip
@@ -231,15 +223,22 @@ function bubbleChart() {
         // Use the max radius in the data as the max in the scale's domain
         // (Ensure the radius is a number by converting it with `+`)
         var maxAmount = d3.max(rawData, function (d) { return +d[BUBBLE_PARAMETERS.radius_field]; });
-        radiusScale.domain([0, maxAmount]);
+        // Scale bubble radii using ^(0.5)
+        // We size bubbles based on area instead of radius
+        radiusScale = d3.scalePow()
+            .exponent(0.5)
+            .range([2, 25])  // Range between 2 and 25 pixels
+            .domain([0, maxAmount]);
 
+        fillColorScale = getFillColorScale();
+        
         nodes = createNodes(rawData);
 
         // Create a SVG element inside the provided selector with desired size.
         svg = d3.select(selector)
             .append('svg')
-            .attr('width', width)
-            .attr('height', height);
+            .attr('width', BUBBLE_PARAMETERS.width)
+            .attr('height', BUBBLE_PARAMETERS.height);
 
         // Bind nodes data to what will become DOM elements to represent them.
         svg.selectAll('.bubble')
@@ -250,8 +249,8 @@ function bubbleChart() {
             .classed('bubble', true)
             // Initially, their radius (r attribute) will be 0.
             .attr('r', 0)
-            .attr('fill', function (d) { return fillColor(d.fill_color_group); })
-            .attr('stroke', function (d) { return d3.rgb(fillColor(d.fill_color_group)).darker(); })
+            .attr('fill', function (d) { return fillColorScale(d.fill_color_group); })
+            .attr('stroke', function (d) { return d3.rgb(fillColorScale(d.fill_color_group)).darker(); })
             .attr('stroke-width', 2)
             .on('mouseover', showTooltip)
             .on('mouseout', hideTooltip);
@@ -270,16 +269,16 @@ function bubbleChart() {
             .on("tick", ticked);
     };
 
-    chart.switchMode = function (buttonId) {
+    chart.switchMode = function (buttonID) {
         /*
          * Externally accessible function (this is attached to the
          * returned chart function). Allows the visualization to toggle
          * between display modes.
          *
-         * buttonId is expected to be a string corresponding to one of the modes.
+         * buttonID is expected to be a string corresponding to one of the modes.
          */
         // Get data on the new mode we have just switched to
-        currentMode = new ViewMode(buttonId)
+        currentMode = new ViewMode(buttonID)
 
         // Remove current labels
         label_elements = svg.selectAll('.bubble_group_label').remove();
@@ -291,7 +290,7 @@ function bubbleChart() {
             showLabels(currentMode);
         }
         
-        // Move the bubbles to their new locations
+        // MOVE BUBBLES TO THEIR NEW LOCATIONS
 
         // Given the mode we are in, obtain the node -> target mapping
         var targetFunction = getTargetFunction(currentMode)
