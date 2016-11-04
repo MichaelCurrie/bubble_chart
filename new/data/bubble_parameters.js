@@ -3,7 +3,7 @@ var BUBBLE_PARAMETERS = {
   "report_title": "Largest Cities of the World",
   "footer_text": "A demonstration of animated bubble charts in JavaScript and D3.js",
   "width": 940,
-  "height": 800,
+  "height": 900,
   "radius_field": "Population",
   "fill_color": {
     "data_field": "Density Level",
