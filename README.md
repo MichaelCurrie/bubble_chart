@@ -9,7 +9,9 @@ Changes in my fork:
 - Generalized the code so that any number of groupings can be specified, with `bubble_parameters.js`
 - Upgraded d3.js from v3 to v4
 - Changed collision force model so circles don't overlap (inspired by https://bl.ocks.org/mbostock/31ce330646fa8bcb7289ff3b97aab3f5)
-- Changed example data, to largest cities of the world (since I data with multiple dimensions to demonstrate the grouping feature).  Source: https://fusiontables.google.com/DataSource?docid=1MYXX1aUrAW4CVWQwewqU4c6-Pti8Nk0BSklNYHY
+- Changed example data, to largest cities of the world (since we needed data with multiple dimensions to demonstrate the grouping feature).  Source: https://fusiontables.google.com/DataSource?docid=1MYXX1aUrAW4CVWQwewqU4c6-Pti8Nk0BSklNYHY
+
+![](bubble%20demo.gif?raw=true)
 
 ## Running
 
