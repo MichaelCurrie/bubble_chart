@@ -93,8 +93,8 @@ function bubbleChart() {
         return function (node) {
             // Given a mode and node, return the correct target
             if(mode.size == 1) {
+                // If there is no grid, our target is the default center
                 target = mode.gridCenters[""];
-                //console.log("targets size 1, so target is ", target)
             } else {
                 // If the grid size is greater than 1, look up the appropriate target
                 // coordinate using the relevant node_tag for the mode we are in
@@ -109,8 +109,6 @@ function bubbleChart() {
         /*
          * Shows labels for each of the positions in the grid.
          */
-        console.log("Show bubble group labels");
-
         var currentLabels = mode.labels; 
         var bubble_group_labels = svg.selectAll('.bubble_group_label')
             .data(currentLabels);
@@ -243,8 +241,6 @@ function bubbleChart() {
             .attr('width', width)
             .attr('height', height);
 
-        console.log("nodes", nodes);
-            
         // Bind nodes data to what will become DOM elements to represent them.
         svg.selectAll('.bubble')
             .data(nodes, function (d) { return d.id; })
@@ -265,7 +261,7 @@ function bubbleChart() {
         // Fancy transition to make bubbles appear, ending with the correct radius
         bubbles.transition()
             .duration(2000)
-            .on("start", function (d) {console.log("gah");})
+            //.on("start", function (d) {console.log("Starting the bubbles growing");})
             .attr('r', function (d) { return d.scaled_radius; });
 
         forceSim = d3.forceSimulation(nodes)
@@ -355,12 +351,11 @@ function ViewMode(button_id) {
     for(var i=0; i<this.size; i++) {
         var cur_row = Math.floor(i / this.gridDimensions.columns);    // indexed starting at zero
         var cur_col = i % this.gridDimensions.columns;    // indexed starting at zero
-        var xx = {
+        var currentCenter = {
             x: (2 * cur_col + 1) * (width / (this.gridDimensions.columns * 2)),
             y: (2 * cur_row + 1) * (height / (this.gridDimensions.rows * 2))
         };
-        this.gridCenters[this.labels[i]] = xx;
-        console.log("gridcentre", i, xx.x, xx.y);
+        this.gridCenters[this.labels[i]] = currentCenter;
     }
 };
 
