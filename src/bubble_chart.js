@@ -6,15 +6,15 @@
  *
  */
 
-function bubbleChart() {
+function createBubbleChart() {
     /* bubbleChart creation function. Returns a function that will
      * instantiate a new bubble chart given a DOM element to display
      * it in and a dataset to visualize.
      */
 
-    // Tooltip object for mouseover functionality, width 240
-    var tooltip = floatingTooltip('bubble_chart_tooltip', 240);
-    // These will be set in the `chart` function
+    // Tooltip object for mouseover functionality, width 200
+    var tooltip = floatingTooltip('bubble_chart_tooltip', 200);
+    // These will be set in the `bubbleChart` function
     var svg = null;
     var bubbles = null;
     var forceSim = null;
@@ -205,7 +205,7 @@ function bubbleChart() {
     }        
     //////////////////////////////////////////////////////////////
     
-    var chart = function chart(selector, rawData) {
+    var bubbleChart = function bubbleChart(selector, rawData) {
         /*
          * Main entry point to the bubble chart. This function is returned
          * by the parent closure. It prepares the rawData for visualization
@@ -269,7 +269,7 @@ function bubbleChart() {
             .on("tick", ticked);
     };
 
-    chart.switchMode = function (buttonID) {
+    bubbleChart.switchMode = function (buttonID) {
         /*
          * Externally accessible function (this is attached to the
          * returned chart function). Allows the visualization to toggle
@@ -304,12 +304,11 @@ function bubbleChart() {
         forceSim.alphaTarget(1).restart();
     };
     
-    // Return the chart function from closure.
-    return chart;
+    // Return the bubbleChart function from closure.
+    return bubbleChart;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
-// OBJECT
 function ViewMode(button_id) {
     /* ViewMode: an object that has useful parameters for each view mode.
      * initialize it with your desired view mode, then use its parameters.
@@ -369,7 +368,7 @@ report_title.innerHTML = BUBBLE_PARAMETERS.report_title;
 document.getElementById("footer_text").innerHTML = BUBBLE_PARAMETERS.footer_text;
 
 // Create a new bubble chart instance
-var myBubbleChart = bubbleChart();
+var myBubbleChart = createBubbleChart();
 
 // Load data
 d3.csv("data/" + BUBBLE_PARAMETERS.data_file, function (error, data) {
