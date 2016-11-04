@@ -1,13 +1,16 @@
-/* bubbleChart creation function. Returns a function that will
- * instantiate a new bubble chart given a DOM element to display
- * it in and a dataset to visualize.
- *
+/* Bubble chart
+ * 
+ * Based on Jim Vallandingham's work
  * Organization and style inspired by:
  * https://bost.ocks.org/mike/chart/
  *
  */
 
 function bubbleChart() {
+    /* bubbleChart creation function. Returns a function that will
+     * instantiate a new bubble chart given a DOM element to display
+     * it in and a dataset to visualize.
+    */
     // Constants for sizing
     var width = BUBBLE_PARAMETERS.width;
     var height = BUBBLE_PARAMETERS.height;
@@ -18,44 +21,6 @@ function bubbleChart() {
     // Locations to move bubbles towards, depending
     // on which view mode is selected.
     var center = { x: width / 2, y: height / 2 };
-
-    // Used when setting up force and moving around nodes
-    var DAMPER = 0.102 * 1.1;
-
-    // Charge function that is called for each node.
-    // Charge is proportional to the diameter of the
-    // circle (which is stored in the scaled_radius attribute
-    // of the circle's associated data.
-    // This is done to allow for accurate collision
-    // detection with nodes of different sizes.
-    // Charge is negative because we want nodes to repel.
-    // Dividing by 8 scales down the charge to be
-    // appropriate for the visualization dimensions.
-    function charge(d) {
-        return -Math.pow(d.scaled_radius, 2.0) / 8;
-    }
-
-    // Here we create a force layout and
-    // configure it to use the charge function
-    // from above. This also sets some contants
-    // to specify how the force layout should behave.
-    // More configuration is done below.
-    var forceSim = d3.forceSimulation()
-        .force("link", d3.forceLink().id(function(d) { return d.id; }))
-        .force("charge", charge)
-        //.force("gravity", -0.01)
-        .force("center", d3.forceCenter(width / 2, height / 2));
-
-/*
-    var forceSim = d3.forceSimulation()
-        .force('link', d3.forceLink().id(function (d) { return d.ID; }))
-        .force("x", d3.forceX(width))
-        .force("y", d3.forceY(height))
-        .force("charge", d3.forceManyBody) // charge);
-        .force("center", d3.forceCenter(width/2, height/2))
-        //.gravity(-0.01)
-        .velocityDecay(0.9);        // Formerly .friction in d3v3
-    */
 
     // SET COLOURS
     var color_groupsKeys = Object.keys(BUBBLE_PARAMETERS.fill_color.color_groups)
@@ -74,15 +39,14 @@ function bubbleChart() {
     // Using ^(0.5), size bubbles based on area instead of radius
     var radiusScale = d3.scalePow()
         .exponent(0.5)
-        .range([2, 50]);  // Range between 2 and 50 pixels
+        .range([2, 25]);  // Range between 2 and 50 pixels
 
-    console.log()
-        
     // These will be set in createNodes and create_vis
     var svg = null;
     var bubbles = null;
+    var forceSim = null;
     var nodes = [];
-        
+
     function createNodes(rawData) {
         /*
          * This data manipulation function takes the raw data from
@@ -123,68 +87,48 @@ function bubbleChart() {
 
         return myNodes;
     }
-    
-    parent = this
-    function moveBubbleToNewTarget(alpha) {
-        /*
-         * Helper function for arrangeBubbles.
-         * Returns a function that takes the data for a
-         * single node and adjusts the position values
-         * of that node to move it the center of the group
-         * for that node.
-         *
-         * Positioning is adjusted by the force layout's
-         * alpha parameter which gets smaller and smaller as
-         * the force layout runs. This makes the impact of
-         * this moving get reduced as each node gets closer to
-         * its destination, and so allows other forces like the
-         * node's charge force to also impact final location.
-         */
+
+    function getTargetFunction(mode) {
+        // Given a mode, return an anonymous function that maps nodes to target coordinates
         return function (node) {
-            var target;
-            if(parent.currentMode.size == 1) {
-                target = parent.currentMode.gridCenters[""];
+            // Given a mode and node, return the correct target
+            if(mode.size == 1) {
+                target = mode.gridCenters[""];
                 //console.log("targets size 1, so target is ", target)
             } else {
                 // If the grid size is greater than 1, look up the appropriate target
                 // coordinate using the relevant node_tag for the mode we are in
-                // e.g. if we are in "years" mode, look up the node's year (e.g. 2007) and have
-                //            that be the node_tag we use to look up the grid center
-                //            (e.g. 2007's center is x=140, y=400)
-                //console.log("button_id is ", parent.currentMode.buttonId) // DEBUG
-                node_tag = node[parent.currentMode.dataField]
-                //console.log("node tag is ", node_tag) // DEBUG
-                target = parent.currentMode.gridCenters[node_tag];
-                //console.log("targets size >1, so target is ", target) // DEBUG
+                node_tag = node[mode.dataField]
+                target = mode.gridCenters[node_tag];
             }
-            node.x += (target.x - node.x) * alpha * DAMPER;
-            node.y += (target.y - node.y) * alpha * DAMPER;
-        };
+            return target;
+        }
     }
 
-    parent = this
-    function showLabels() {
+    function showLabels(mode) {
         /*
          * Shows labels for each of the positions in the grid.
          */
         console.log("Show bubble group labels");
 
-        var currentLabels = parent.currentMode.labels; 
+        var currentLabels = mode.labels; 
         var bubble_group_labels = svg.selectAll('.bubble_group_label')
             .data(currentLabels);
 
-        var grid_element_half_height = BUBBLE_PARAMETERS.height / (parent.currentMode.gridDimensions.rows * 2);
+        var grid_element_half_height = BUBBLE_PARAMETERS.height / (mode.gridDimensions.rows * 2);
             
         bubble_group_labels.enter().append('text')
             .attr('class', 'bubble_group_label')
-            .attr('x', function (d) { return parent.currentMode.gridCenters[d].x; })
-            .attr('y', function (d) { return parent.currentMode.gridCenters[d].y - grid_element_half_height; })
+            .attr('x', function (d) { return mode.gridCenters[d].x; })
+            .attr('y', function (d) { return mode.gridCenters[d].y - grid_element_half_height; })
             .attr('text-anchor', 'middle')                // centre the text
             .attr('dominant-baseline', 'hanging') // so the text is immediately below the bounding box, rather than above
             .text(function (d) { return d; });
 
-        var grid_element_half_height = BUBBLE_PARAMETERS.height / (parent.currentMode.gridDimensions.rows * 2);
-        var grid_element_half_width = BUBBLE_PARAMETERS.width / (parent.currentMode.gridDimensions.columns * 2);
+        // GRIDLINES FOR DEBUGGING PURPOSES
+        /*
+        var grid_element_half_height = BUBBLE_PARAMETERS.height / (mode.gridDimensions.rows * 2);
+        var grid_element_half_width = BUBBLE_PARAMETERS.width / (mode.gridDimensions.columns * 2);
         
         for (var key in currentMode.gridCenters) {
             if (currentMode.gridCenters.hasOwnProperty(key)) {
@@ -203,7 +147,8 @@ function bubbleChart() {
                     .attr("rx", 15)
                     .attr("ry", 10);
             }
-        }        
+        } 
+        */
     }
 
     function tooltipContent(d) {
@@ -263,6 +208,11 @@ function bubbleChart() {
         tooltip.hideTooltip();
     }
 
+    function ticked() {
+        bubbles.each(function (node) {})
+            .attr("cx", function(d) { return d.x; })
+            .attr("cy", function(d) { return d.y; });
+    }        
     //////////////////////////////////////////////////////////////
     
     var chart = function chart(selector, rawData) {
@@ -286,8 +236,6 @@ function bubbleChart() {
         radiusScale.domain([0, maxAmount]);
 
         nodes = createNodes(rawData);
-        // Set the forceSim's nodes to our newly created nodes array.
-        forceSim.nodes(nodes);
 
         // Create a SVG element inside the provided selector with desired size.
         svg = d3.select(selector)
@@ -295,18 +243,17 @@ function bubbleChart() {
             .attr('width', width)
             .attr('height', height);
 
+        console.log("nodes", nodes);
+            
         // Bind nodes data to what will become DOM elements to represent them.
-        bubbles = svg.selectAll('.bubble')
-            .data(nodes, function (d) { return d.id; });
-
-        // Create new circle elements each with class `bubble`.
-        // There will be one circle.bubble for each object in the nodes array.
-        // Initially, their radius (r attribute) will be 0.
-        bubbles.enter().append('circle')
+        svg.selectAll('.bubble')
+            .data(nodes, function (d) { return d.id; })
+            // Create new circle elements each with class `bubble`.
+            // There will be one circle.bubble for each object in the nodes array.
+            .enter().append('circle')
             .classed('bubble', true)
+            // Initially, their radius (r attribute) will be 0.
             .attr('r', 0)
-            .attr('cx', function (d) { return d.x; })
-            .attr('cy', function (d) { return d.y; })
             .attr('fill', function (d) { return fillColor(d.fill_color_group); })
             .attr('stroke', function (d) { return d3.rgb(fillColor(d.fill_color_group)).darker(); })
             .attr('stroke-width', 2)
@@ -321,12 +268,12 @@ function bubbleChart() {
             .on("start", function (d) {console.log("gah");})
             .attr('r', function (d) { return d.scaled_radius; });
 
-        console.log("bubbles", bubbles)
-        console.log("forceSim", forceSim)
-        console.log("nodes", nodes)
+        forceSim = d3.forceSimulation(nodes)
+            .velocityDecay(0.1)
+            .force("collide", d3.forceCollide().radius(function(d) { return d.scaled_radius + 0.5; }).iterations(3))
+            .on("tick", ticked);
     };
 
-    parent = this
     chart.switchMode = function (buttonId) {
         /*
          * Externally accessible function (this is attached to the
@@ -336,42 +283,30 @@ function bubbleChart() {
          * buttonId is expected to be a string corresponding to one of the modes.
          */
         // Get data on the new mode we have just switched to
-        parent.currentMode = new ViewMode(buttonId)
+        currentMode = new ViewMode(buttonId)
 
-        console.log("parent currentMode size", parent.currentMode.size)
-       
         // Remove current labels
         label_elements = svg.selectAll('.bubble_group_label').remove();
         // Remove current debugging elements
         debug_elements = svg.selectAll('.mc_debug').remove(); // DEBUG
 
         // Show labels, if we have more than one category to label
-        if (parent.currentMode.size > 1) {
-            showLabels();
+        if (currentMode.size > 1) {
+            showLabels(currentMode);
         }
         
         // Move the bubbles to their new locations
-        /*
-         * Sets visualization to the new target.
-         * The forceSim layout tick function is set 
-         * to move nodes to the center of their
-         * respective targets.
-         */
-        console.log("setting tick function")
-        forceSim.on('tick',
-            function () {
-                bubbles.each(moveBubbleToNewTarget(this.alpha()))
-                    .attr('cx', function (d) { return d.x; })
-                    .attr('cy', function (d) { return d.y; });
-            }
-        );
 
-        console.log("MOVING BUBBLES");
-        bubbles.each(moveBubbleToNewTarget(1))//.nodes()
-            .attr('cx', function (d) { return d.x; })
-            .attr('cy', function (d) { return d.y; });
+        // Given the mode we are in, obtain the node -> target mapping
+        var targetFunction = getTargetFunction(currentMode)
         
-        forceSim.alphaTarget(0.005).restart();
+        // Specify the target of the force layout for each of the circles
+        forceSim
+            .force("x", d3.forceX(function(d) {return targetFunction(d).x}).strength(0.02))
+            .force("y", d3.forceY(function(d) {return targetFunction(d).y}).strength(0.02));
+
+        // Restart the force layout simulation
+        forceSim.alphaTarget(1).restart();
     };
     
     // Return the chart function from closure.
