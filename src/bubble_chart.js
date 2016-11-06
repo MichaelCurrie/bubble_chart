@@ -241,53 +241,9 @@ function createBubbleChart() {
             .attr("dy", "-3em")
             .attr("text-anchor", "middle")
             .text("Frequency");
-    }    
-    //////////////////////////////////////////////////////////////
-    
-    var bubbleChart = function bubbleChart(selector, rawData) {
-        /*
-         * Main entry point to the bubble chart. This function is returned
-         * by the parent closure. It prepares the rawData for visualization
-         * and adds an svg element to the provided selector and starts the
-         * visualization creation process.
-         *
-         * selector is expected to be a DOM element or CSS selector that
-         * points to the parent element of the bubble chart. Inside this
-         * element, the code will add the SVG continer for the visualization.
-         *
-         * rawData is expected to be an array of data objects as provided by
-         * a d3 loading function like d3.csv.
-         */
-        
-        // Use the max radius in the data as the max in the scale's domain
-        // (Ensure the radius is a number by converting it with `+`)
-        var maxAmount = d3.max(rawData, function (d) { return +d[BUBBLE_PARAMETERS.radius_field]; });
-        // Scale bubble radii using ^(0.5)
-        // We size bubbles based on area instead of radius
-        radiusScale = d3.scalePow()
-            .exponent(0.5)
-            .range([2, 25])  // Range between 2 and 25 pixels
-            .domain([0, maxAmount]);
+    }
 
-        fillColorScale = getFillColorScale();
-        
-        nodes = createNodes(rawData);
-
-        // Create a SVG element inside the provided selector with desired size.
-        svg = d3.select(selector)
-            .append('svg')
-            .attr('width', BUBBLE_PARAMETERS.width)
-            .attr('height', BUBBLE_PARAMETERS.height);
-
-        // Specify margins and the inner width and height
-        margin = {top: 20, right: 20, bottom: 50, left: 80},
-        width = +svg.attr("width") - margin.left - margin.right,
-        height = +svg.attr("height") - margin.top - margin.bottom;
-
-        // Create an inner SVG panel with padding on all sides for axes
-        inner_svg = svg.append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");        
-        
+    function createBubbles() {
         // Bind nodes data to what will become DOM elements to represent them.
         inner_svg.selectAll('.bubble')
             .data(nodes, function (d) { return d.id; })
@@ -308,8 +264,8 @@ function createBubbleChart() {
         bubbles.transition()
             .duration(2000)
             .attr('r', function (d) { return d.scaled_radius; });
-            
-        // Configure the force layout
+
+        // Configure the force layout holding the bubbles apart
         forceSim = d3.forceSimulation()
             .nodes(nodes)
             .velocityDecay(0.2)
@@ -330,6 +286,61 @@ function createBubbleChart() {
             forceSim
                 .force('charge', d3.forceManyBody().strength(bubbleCharge));
         }
+    }
+
+    function createCanvas(parentDOMElement) {
+        // Create a SVG element inside the provided selector with desired size.
+        svg = d3.select(parentDOMElement)
+            .append('svg')
+            .attr('width', BUBBLE_PARAMETERS.width)
+            .attr('height', BUBBLE_PARAMETERS.height);
+
+        // Specify margins and the inner width and height
+        margin = {top: 20, right: 20, bottom: 50, left: 80},
+        width = +svg.attr("width") - margin.left - margin.right,
+        height = +svg.attr("height") - margin.top - margin.bottom;
+
+        // Create an inner SVG panel with padding on all sides for axes
+        inner_svg = svg.append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");        
+    }    
+    //////////////////////////////////////////////////////////////
+    
+    var bubbleChart = function bubbleChart(parentDOMElement, rawData) {
+        /*
+         * Main entry point to the bubble chart. This function is returned
+         * by the parent closure. It prepares the rawData for visualization
+         * and adds an svg element to the provided selector and starts the
+         * visualization creation process.
+         *
+         * parentDOMElement is expected to be a DOM element or CSS selector that
+         * points to the parent element of the bubble chart. Inside this
+         * element, the code will add the SVG continer for the visualization.
+         *
+         * rawData is expected to be an array of data objects as provided by
+         * a d3 loading function like d3.csv.
+         */
+        
+        // Use the max radius in the data as the max in the scale's domain
+        // (Ensure the radius is a number by converting it with `+`)
+        var maxAmount = d3.max(rawData, function (d) { return +d[BUBBLE_PARAMETERS.radius_field]; });
+        // Scale bubble radii using ^(0.5)
+        // We size bubbles based on area instead of radius
+        radiusScale = d3.scalePow()
+            .exponent(0.5)
+            .range([2, 25])  // Range between 2 and 25 pixels
+            .domain([0, maxAmount]);
+
+        fillColorScale = getFillColorScale();
+        
+        // Initialize the "nodes" with the data we've loaded
+        nodes = createNodes(rawData);
+
+        // Initialize svg and inner_svg, which we will attach all our drawing objects to.
+        createCanvas(parentDOMElement);
+        
+        // Create the bubbles and the force holding them apart
+        createBubbles();
     };
 
     bubbleChart.switchMode = function (buttonID) {
