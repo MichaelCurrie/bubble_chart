@@ -15,12 +15,17 @@ function createBubbleChart() {
     // Tooltip object for mouseover functionality, width 200
     var tooltip = floatingTooltip('bubble_chart_tooltip', 200);
     // These will be set in the `bubbleChart` function
-    var svg = null;
+    var svg = null, inner_svg = null;
     var bubbles = null;
     var forceSim = null;
     var fillColorScale = null;
     var radiusScale = null;
     var nodes = [];
+    var margin = null;
+    var width = null;
+    var height = null;
+    var xAxis = null;
+    var yAxis = null;
 
     function getFillColorScale() {
         // Obtain a color mapping from keys to color values specified in our parameters file
@@ -62,8 +67,8 @@ function createBubbleChart() {
                 actual_radius: +data_row[BUBBLE_PARAMETERS.radius_field],
                 fill_color_group: data_row[BUBBLE_PARAMETERS.fill_color.data_field],
                 // Put each node initially in a random location
-                x: Math.random() * BUBBLE_PARAMETERS.width,
-                y: Math.random() * BUBBLE_PARAMETERS.height
+                x: Math.random() * width,
+                y: Math.random() * height
             };
             for(var key in data_row) {
                 // Skip loop if the property is from prototype
@@ -102,10 +107,10 @@ function createBubbleChart() {
          * Shows labels for each of the positions in the grid.
          */
         var currentLabels = mode.labels; 
-        var bubble_group_labels = svg.selectAll('.bubble_group_label')
+        var bubble_group_labels = inner_svg.selectAll('.bubble_group_label')
             .data(currentLabels);
 
-        var grid_element_half_height = BUBBLE_PARAMETERS.height / (mode.gridDimensions.rows * 2);
+        var grid_element_half_height = height / (mode.gridDimensions.rows * 2);
             
         bubble_group_labels.enter().append('text')
             .attr('class', 'bubble_group_label')
@@ -117,12 +122,12 @@ function createBubbleChart() {
 
         // GRIDLINES FOR DEBUGGING PURPOSES
         /*
-        var grid_element_half_height = BUBBLE_PARAMETERS.height / (mode.gridDimensions.rows * 2);
-        var grid_element_half_width = BUBBLE_PARAMETERS.width / (mode.gridDimensions.columns * 2);
+        var grid_element_half_height = height / (mode.gridDimensions.rows * 2);
+        var grid_element_half_width = width / (mode.gridDimensions.columns * 2);
         
         for (var key in currentMode.gridCenters) {
             if (currentMode.gridCenters.hasOwnProperty(key)) {
-                var rectangle = svg.append("rect")
+                var rectangle = inner_svg.append("rect")
                     .attr("class", "mc_debug")
                     .attr("x", currentMode.gridCenters[key].x - grid_element_half_width)
                     .attr("y", currentMode.gridCenters[key].y - grid_element_half_height)
@@ -130,15 +135,14 @@ function createBubbleChart() {
                     .attr("height", grid_element_half_height*2)
                     .attr("stroke", "red")
                     .attr("fill", "none");
-                var ellipse = svg.append("ellipse")
+                var ellipse = inner_svg.append("ellipse")
                     .attr("class", "mc_debug")
                     .attr("cx", currentMode.gridCenters[key].x)
                     .attr("cy", currentMode.gridCenters[key].y)
                     .attr("rx", 15)
                     .attr("ry", 10);
             }
-        } 
-        */
+        }*/
     }
 
     function tooltipContent(d) {
@@ -202,7 +206,42 @@ function createBubbleChart() {
         bubbles.each(function (node) {})
             .attr("cx", function(d) { return d.x; })
             .attr("cy", function(d) { return d.y; });
-    }        
+    }
+
+    function showAxis(mode) {
+        /*
+         *  Show the axes.
+         */
+
+        // Set up axes
+        xAxis = d3.scaleBand().rangeRound([0, width]).padding(0.1);
+        yAxis = d3.scaleLinear().rangeRound([height, 0]);  
+
+        inner_svg.append("g")
+            .attr("class", "axis axis--x")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(xAxis))
+        inner_svg.append("text")
+            .attr("class", "axis axis--x label")
+            .attr("transform", "translate(" + (width/2) + " , " + (height) + ")")
+            // so the text is immediately below the bounding box, rather than above
+            .attr('dominant-baseline', 'hanging')
+            .attr("dy", "1.5em")
+            .style("text-anchor", "middle")
+            .text("Frequency");
+
+        inner_svg.append("g")
+            .attr("class", "axis axis--y")
+            .call(d3.axisLeft(yAxis).ticks(10, "%"))
+        
+        inner_svg.append("text")
+            .attr("class", "axis axis--y label")
+            // We need to compose a rotation with a translation to place the y-axis label
+            .attr("transform", "translate(" + 0 + ", " + (height/2) + ")rotate(-90)")
+            .attr("dy", "-3em")
+            .attr("text-anchor", "middle")
+            .text("Frequency");
+    }    
     //////////////////////////////////////////////////////////////
     
     var bubbleChart = function bubbleChart(selector, rawData) {
@@ -219,7 +258,7 @@ function createBubbleChart() {
          * rawData is expected to be an array of data objects as provided by
          * a d3 loading function like d3.csv.
          */
-
+        
         // Use the max radius in the data as the max in the scale's domain
         // (Ensure the radius is a number by converting it with `+`)
         var maxAmount = d3.max(rawData, function (d) { return +d[BUBBLE_PARAMETERS.radius_field]; });
@@ -240,8 +279,17 @@ function createBubbleChart() {
             .attr('width', BUBBLE_PARAMETERS.width)
             .attr('height', BUBBLE_PARAMETERS.height);
 
+        // Specify margins and the inner width and height
+        margin = {top: 20, right: 20, bottom: 50, left: 80},
+        width = +svg.attr("width") - margin.left - margin.right,
+        height = +svg.attr("height") - margin.top - margin.bottom;
+
+        // Create an inner SVG panel with padding on all sides for axes
+        inner_svg = svg.append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");        
+        
         // Bind nodes data to what will become DOM elements to represent them.
-        svg.selectAll('.bubble')
+        inner_svg.selectAll('.bubble')
             .data(nodes, function (d) { return d.id; })
             // Create new circle elements each with class `bubble`.
             // There will be one circle.bubble for each object in the nodes array.
@@ -274,7 +322,8 @@ function createBubbleChart() {
                 .iterations(4)
             forceSim
                 .force("collide", bubbleCollideForce)
-        } else {
+        }
+        if(BUBBLE_PARAMETERS.force_type == "charge") {
             function bubbleCharge(d) {
                 return -Math.pow(d.scaled_radius, 2.0) * (+BUBBLE_PARAMETERS.force_strength);
             }    
@@ -292,26 +341,32 @@ function createBubbleChart() {
          * buttonID is expected to be a string corresponding to one of the modes.
          */
         // Get data on the new mode we have just switched to
-        currentMode = new ViewMode(buttonID)
+        currentMode = new ViewMode(buttonID, width, height);
 
         // Remove current labels
-        svg.selectAll('.bubble_group_label').remove();
+        inner_svg.selectAll('.bubble_group_label').remove();
         // Remove current debugging elements
-        svg.selectAll('.mc_debug').remove(); // DEBUG
+        inner_svg.selectAll('.mc_debug').remove(); // DEBUG
+        // Remove axes components
+        inner_svg.selectAll('.axis').remove(); // DEBUG
 
         // Show labels, if we have more than one category to label
-        if (currentMode.size > 1) {
+        if (currentMode.type == "grid" && currentMode.size > 1) {
             showLabels(currentMode);
+        }
+
+        if (currentMode.type == "scatterplot") {
+            showAxis(currentMode);
         }
         
         // MOVE BUBBLES TO THEIR NEW LOCATIONS
 
         // Given the mode we are in, obtain the node -> target mapping
-        var targetFunction = getTargetFunction(currentMode)
+        var targetFunction = getTargetFunction(currentMode);
         var targetForceX = d3.forceX(function(d) {return targetFunction(d).x})
-            .strength(+BUBBLE_PARAMETERS.force_strength)
+            .strength(+BUBBLE_PARAMETERS.force_strength);
         var targetForceY = d3.forceY(function(d) {return targetFunction(d).y})
-            .strength(+BUBBLE_PARAMETERS.force_strength)
+            .strength(+BUBBLE_PARAMETERS.force_strength);
 
         // Specify the target of the force layout for each of the circles
         forceSim
@@ -327,7 +382,7 @@ function createBubbleChart() {
 }
 
 /////////////////////////////////////////////////////////////////////////////////////
-function ViewMode(button_id) {
+function ViewMode(button_id, width, height) {
     /* ViewMode: an object that has useful parameters for each view mode.
      * initialize it with your desired view mode, then use its parameters.
      * Attributes:
@@ -337,11 +392,9 @@ function ViewMode(button_id) {
      - gridCenters       e.g. {"group1": {"x": 10, "y": 20}, ...}
      - dataField    (string)
      - labels       (an array)
+     - type         (type of grouping: "grouping" or "scatterplot")
      - size         (number of groups)
      */
-    var width = BUBBLE_PARAMETERS.width;
-    var height = BUBBLE_PARAMETERS.height;
-
     // Find which button was pressed
     var mode_index;
     for(mode_index=0; mode_index<BUBBLE_PARAMETERS.modes.length; mode_index++) {
@@ -358,6 +411,7 @@ function ViewMode(button_id) {
     this.gridDimensions = curMode.grid_dimensions;
     this.dataField = curMode.data_field;
     this.labels = curMode.labels;
+    this.type = curMode.type;
     if (this.labels == null) { this.labels = [""]; }
     this.size = this.labels.length;
 

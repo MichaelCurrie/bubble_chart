@@ -27,6 +27,7 @@ var BUBBLE_PARAMETERS = {
     {
       "button_text": "All Cities",
       "button_id": "all",
+      "type": "grid",
       "labels": null,
       "grid_dimensions": {"rows": 1, "columns": 1},
       "data_field": null
@@ -34,6 +35,7 @@ var BUBBLE_PARAMETERS = {
     {
       "button_text": "Cities by Region",
       "button_id": "region",
+      "type": "grid",
       "labels": ["Asia (Ex. Near East)", "Sub-Saharan Africa", "Latin Amer. & Carib", "Northern Africa", "Near East", "Former Soviet States","Western Europe", "Eastern Europe", "North America", "Oceania"],
       "grid_dimensions": {"rows": 3, "columns": 4},
       "data_field": "Region"
@@ -41,6 +43,15 @@ var BUBBLE_PARAMETERS = {
     {
       "button_text": "Cities by Density Level",
       "button_id": "density_level",
+      "type": "grid",
+      "labels": ["low", "medium", "high"],
+      "grid_dimensions": {"rows": 1, "columns": 3},
+      "data_field": "Density Level"
+    },
+    {
+      "button_text": "Area vs. Population",
+      "button_id": "area_vs_population",
+      "type": "scatterplot",
       "labels": ["low", "medium", "high"],
       "grid_dimensions": {"rows": 1, "columns": 3},
       "data_field": "Density Level"
