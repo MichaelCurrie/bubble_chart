@@ -4,6 +4,8 @@ var BUBBLE_PARAMETERS = {
   "footer_text": "A demonstration of animated bubble charts in JavaScript and D3.js",
   "width": 940,
   "height": 700,
+  "force_strength": 0.03,
+  "force_type": "charge",
   "radius_field": "Population",
   "fill_color": {
     "data_field": "Density Level",

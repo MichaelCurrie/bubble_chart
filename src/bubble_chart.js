@@ -23,7 +23,9 @@ function createBubbleChart() {
     var nodes = [];
 
     function getFillColorScale() {
-        // Color scale
+        // Obtain a color mapping from keys to color values specified in our parameters file
+
+        // Get the keys and values from the parameters file
         var color_groupsKeys = Object.keys(BUBBLE_PARAMETERS.fill_color.color_groups)
         var color_groupsValues = []
         for (var i=0; i<color_groupsKeys.length; i++) {
@@ -31,7 +33,7 @@ function createBubbleChart() {
             color_groupsValues.push(BUBBLE_PARAMETERS.fill_color.color_groups[key])
         }
         
-        // Nice looking colors - no reason to buck the trend
+        // Generate the key -> value mapping for colors
         var fillColorScale = d3.scaleOrdinal()
             .domain(color_groupsKeys)
             .range(color_groupsValues);
@@ -53,8 +55,6 @@ function createBubbleChart() {
          * array for each element in the rawData input.
          */
         // Use map() to convert raw data into node data.
-        // Checkout http://learnjsdata.com/ for more on
-        // working with data.
         var myNodes = rawData.map(function (data_row) {
             node = {
                 id: data_row.id,
@@ -245,10 +245,9 @@ function createBubbleChart() {
             .data(nodes, function (d) { return d.id; })
             // Create new circle elements each with class `bubble`.
             // There will be one circle.bubble for each object in the nodes array.
-            .enter().append('circle')
+            .enter()
+            .append('circle').attr('r', 0) // Initially, their radius (r attribute) will be 0.
             .classed('bubble', true)
-            // Initially, their radius (r attribute) will be 0.
-            .attr('r', 0)
             .attr('fill', function (d) { return fillColorScale(d.fill_color_group); })
             .attr('stroke', function (d) { return d3.rgb(fillColorScale(d.fill_color_group)).darker(); })
             .attr('stroke-width', 2)
@@ -260,13 +259,28 @@ function createBubbleChart() {
         // Fancy transition to make bubbles appear, ending with the correct radius
         bubbles.transition()
             .duration(2000)
-            //.on("start", function (d) {console.log("Starting the bubbles growing");})
             .attr('r', function (d) { return d.scaled_radius; });
-
-        forceSim = d3.forceSimulation(nodes)
-            .velocityDecay(0.1)
-            .force("collide", d3.forceCollide().radius(function(d) { return d.scaled_radius + 0.5; }).iterations(3))
+            
+        // Configure the force layout
+        forceSim = d3.forceSimulation()
+            .nodes(nodes)
+            .velocityDecay(0.2)
             .on("tick", ticked);
+
+        // Decide what kind of force layout to use: "collide" or "charge"
+        if(BUBBLE_PARAMETERS.force_type == "collide") {
+            var bubbleCollideForce = d3.forceCollide()
+                .radius(function(d) { return d.scaled_radius + 0.5; })
+                .iterations(4)
+            forceSim
+                .force("collide", bubbleCollideForce)
+        } else {
+            function bubbleCharge(d) {
+                return -Math.pow(d.scaled_radius, 2.0) * (+BUBBLE_PARAMETERS.force_strength);
+            }    
+            forceSim
+                .force('charge', d3.forceManyBody().strength(bubbleCharge));
+        }
     };
 
     bubbleChart.switchMode = function (buttonID) {
@@ -281,9 +295,9 @@ function createBubbleChart() {
         currentMode = new ViewMode(buttonID)
 
         // Remove current labels
-        label_elements = svg.selectAll('.bubble_group_label').remove();
+        svg.selectAll('.bubble_group_label').remove();
         // Remove current debugging elements
-        debug_elements = svg.selectAll('.mc_debug').remove(); // DEBUG
+        svg.selectAll('.mc_debug').remove(); // DEBUG
 
         // Show labels, if we have more than one category to label
         if (currentMode.size > 1) {
@@ -294,11 +308,15 @@ function createBubbleChart() {
 
         // Given the mode we are in, obtain the node -> target mapping
         var targetFunction = getTargetFunction(currentMode)
-        
+        var targetForceX = d3.forceX(function(d) {return targetFunction(d).x})
+            .strength(+BUBBLE_PARAMETERS.force_strength)
+        var targetForceY = d3.forceY(function(d) {return targetFunction(d).y})
+            .strength(+BUBBLE_PARAMETERS.force_strength)
+
         // Specify the target of the force layout for each of the circles
         forceSim
-            .force("x", d3.forceX(function(d) {return targetFunction(d).x}).strength(0.02))
-            .force("y", d3.forceY(function(d) {return targetFunction(d).y}).strength(0.02));
+            .force("x", targetForceX)
+            .force("y", targetForceY);
 
         // Restart the force layout simulation
         forceSim.alphaTarget(1).restart();
@@ -316,9 +334,9 @@ function ViewMode(button_id) {
      - mode_index (which button was pressed)
      - buttonId     (which button was pressed)
      - gridDimensions    e.g. {"rows": 10, "columns": 20}
-     - gridCenters         e.g. {"group1": {"x": 10, "y": 20}, ...}
+     - gridCenters       e.g. {"group1": {"x": 10, "y": 20}, ...}
      - dataField    (string)
-     - labels     (an array)
+     - labels       (an array)
      - size         (number of groups)
      */
     var width = BUBBLE_PARAMETERS.width;
