@@ -387,9 +387,9 @@ function createBubbleChart() {
 
         // SHOW AXIS (if our mode is scatter plot)
         if (currentMode.type == "scatterplot") {
-            xScale = d3.scaleLinear().range([0, width])
+            xScale = d3.scaleLog().range([0, width])
                 .domain([dataExtents[currentMode.xDataField][0], dataExtents[currentMode.xDataField][1]]);
-            yScale = d3.scaleLinear().range([height, 0])
+            yScale = d3.scaleLog().range([height, 0])
                 .domain([dataExtents[currentMode.yDataField][0], dataExtents[currentMode.yDataField][1]]);
             
             showAxis(currentMode);
