@@ -24,8 +24,12 @@ function createBubbleChart() {
     var margin = null;
     var width = null;
     var height = null;
+    var dataExtents = {};
+    // For scatterplots (initialized if applicable)
     var xAxis = null;
     var yAxis = null;
+    var xScale = null;
+    var yScale = null;
 
     function getFillColorScale() {
         // Obtain a color mapping from keys to color values specified in our parameters file
@@ -85,8 +89,11 @@ function createBubbleChart() {
         return myNodes;
     }
 
-    function getTargetFunction(mode) {
+    function getGridTargetFunction(mode) {
         // Given a mode, return an anonymous function that maps nodes to target coordinates
+        if (mode.type != "grid") {
+            throw "Error: getGridTargetFunction called with mode != 'grid'";
+        }
         return function (node) {
             // Given a mode and node, return the correct target
             if(mode.size == 1) {
@@ -101,7 +108,7 @@ function createBubbleChart() {
             return target;
         }
     }
-
+    
     function showLabels(mode) {
         /*
          * Shows labels for each of the positions in the grid.
@@ -214,8 +221,8 @@ function createBubbleChart() {
          */
 
         // Set up axes
-        xAxis = d3.scaleBand().rangeRound([0, width]).padding(0.1);
-        yAxis = d3.scaleLinear().rangeRound([height, 0]);  
+        xAxis = xScale; //d3.scaleBand().rangeRound([0, width]).padding(0.1);
+        yAxis = yScale; //d3.scaleLinear().rangeRound([height, 0]);  
 
         inner_svg.append("g")
             .attr("class", "axis axis--x")
@@ -228,11 +235,11 @@ function createBubbleChart() {
             .attr('dominant-baseline', 'hanging')
             .attr("dy", "1.5em")
             .style("text-anchor", "middle")
-            .text("Frequency");
+            .text(mode.xDataField);
 
         inner_svg.append("g")
             .attr("class", "axis axis--y")
-            .call(d3.axisLeft(yAxis).ticks(10, "%"))
+            .call(d3.axisLeft(yAxis).ticks(10))//, "%"))
         
         inner_svg.append("text")
             .attr("class", "axis axis--y label")
@@ -240,7 +247,7 @@ function createBubbleChart() {
             .attr("transform", "translate(" + 0 + ", " + (height/2) + ")rotate(-90)")
             .attr("dy", "-3em")
             .attr("text-anchor", "middle")
-            .text("Frequency");
+            .text(mode.yDataField);
     }
 
     function createBubbles() {
@@ -264,27 +271,35 @@ function createBubbleChart() {
         bubbles.transition()
             .duration(2000)
             .attr('r', function (d) { return d.scaled_radius; });
-
+    }
+    
+    function addForceLayout(isStatic) {
+        if (forceSim) {
+            // Stop any forces currently in progress
+            forceSim.stop();
+        }
         // Configure the force layout holding the bubbles apart
         forceSim = d3.forceSimulation()
             .nodes(nodes)
             .velocityDecay(0.2)
             .on("tick", ticked);
-
-        // Decide what kind of force layout to use: "collide" or "charge"
-        if(BUBBLE_PARAMETERS.force_type == "collide") {
-            var bubbleCollideForce = d3.forceCollide()
-                .radius(function(d) { return d.scaled_radius + 0.5; })
-                .iterations(4)
-            forceSim
-                .force("collide", bubbleCollideForce)
-        }
-        if(BUBBLE_PARAMETERS.force_type == "charge") {
-            function bubbleCharge(d) {
-                return -Math.pow(d.scaled_radius, 2.0) * (+BUBBLE_PARAMETERS.force_strength);
-            }    
-            forceSim
-                .force('charge', d3.forceManyBody().strength(bubbleCharge));
+        
+        if (!isStatic) {
+            // Decide what kind of force layout to use: "collide" or "charge"
+            if(BUBBLE_PARAMETERS.force_type == "collide") {
+                var bubbleCollideForce = d3.forceCollide()
+                    .radius(function(d) { return d.scaled_radius + 0.5; })
+                    .iterations(4)
+                forceSim
+                    .force("collide", bubbleCollideForce)
+            }
+            if(BUBBLE_PARAMETERS.force_type == "charge") {
+                function bubbleCharge(d) {
+                    return -Math.pow(d.scaled_radius, 2.0) * (+BUBBLE_PARAMETERS.force_strength);
+                }    
+                forceSim
+                    .force('charge', d3.forceManyBody().strength(bubbleCharge));
+            }
         }
     }
 
@@ -321,15 +336,19 @@ function createBubbleChart() {
          * a d3 loading function like d3.csv.
          */
         
-        // Use the max radius in the data as the max in the scale's domain
-        // (Ensure the radius is a number by converting it with `+`)
-        var maxAmount = d3.max(rawData, function (d) { return +d[BUBBLE_PARAMETERS.radius_field]; });
+        // Capture all the maximums and minimums in the numeric fields, which
+        // will be used in any scatterplots.
+        for (var numeric_field_index in BUBBLE_PARAMETERS.numeric_fields) {
+            var numeric_field = BUBBLE_PARAMETERS.numeric_fields[numeric_field_index];
+            dataExtents[numeric_field] = d3.extent(rawData, function (d) { return +d[numeric_field]; });
+        }
         // Scale bubble radii using ^(0.5)
         // We size bubbles based on area instead of radius
+        var maxRadius = dataExtents[BUBBLE_PARAMETERS.radius_field][1];
         radiusScale = d3.scalePow()
             .exponent(0.5)
             .range([2, 25])  // Range between 2 and 25 pixels
-            .domain([0, maxAmount]);
+            .domain([0, maxRadius]);   // Domain between 0 and the largest bubble radius
 
         fillColorScale = getFillColorScale();
         
@@ -361,19 +380,40 @@ function createBubbleChart() {
         // Remove axes components
         inner_svg.selectAll('.axis').remove(); // DEBUG
 
-        // Show labels, if we have more than one category to label
+        // SHOW LABELS (if we have more than one category to label)
         if (currentMode.type == "grid" && currentMode.size > 1) {
             showLabels(currentMode);
         }
 
+        // SHOW AXIS (if our mode is scatter plot)
         if (currentMode.type == "scatterplot") {
+            xScale = d3.scaleLinear().range([0, width])
+                .domain([dataExtents[currentMode.xDataField][0], dataExtents[currentMode.xDataField][1]]);
+            yScale = d3.scaleLinear().range([height, 0])
+                .domain([dataExtents[currentMode.yDataField][0], dataExtents[currentMode.yDataField][1]]);
+            
             showAxis(currentMode);
+
+            addForceLayout(true);  // make it static so we can plot bubbles
+        } else {
+            addForceLayout(false); // the bubbles should repel about the grid centers
         }
         
         // MOVE BUBBLES TO THEIR NEW LOCATIONS
-
+        var targetFunction;
+        if (currentMode.type == "grid") {
+            targetFunction = getGridTargetFunction(currentMode);
+        }
+        if (currentMode.type == "scatterplot") {
+            targetFunction = function (d) {
+                return { 
+                    x: xScale(d[currentMode.xDataField]),
+                    y: yScale(d[currentMode.yDataField])
+                };
+            };
+        }
+        
         // Given the mode we are in, obtain the node -> target mapping
-        var targetFunction = getTargetFunction(currentMode);
         var targetForceX = d3.forceX(function(d) {return targetFunction(d).x})
             .strength(+BUBBLE_PARAMETERS.force_strength);
         var targetForceY = d3.forceY(function(d) {return targetFunction(d).y})
@@ -419,24 +459,32 @@ function ViewMode(button_id, width, height) {
     
     var curMode = BUBBLE_PARAMETERS.modes[mode_index];
     this.buttonId = curMode.button_id;
-    this.gridDimensions = curMode.grid_dimensions;
-    this.dataField = curMode.data_field;
-    this.labels = curMode.labels;
     this.type = curMode.type;
-    if (this.labels == null) { this.labels = [""]; }
-    this.size = this.labels.length;
-
     
-    // Loop through all grid labels and assign the centre coordinates
-    this.gridCenters = {};
-    for(var i=0; i<this.size; i++) {
-        var cur_row = Math.floor(i / this.gridDimensions.columns);    // indexed starting at zero
-        var cur_col = i % this.gridDimensions.columns;    // indexed starting at zero
-        var currentCenter = {
-            x: (2 * cur_col + 1) * (width / (this.gridDimensions.columns * 2)),
-            y: (2 * cur_row + 1) * (height / (this.gridDimensions.rows * 2))
-        };
-        this.gridCenters[this.labels[i]] = currentCenter;
+    if (this.type == "grid") {
+        this.gridDimensions = curMode.grid_dimensions;
+        this.labels = curMode.labels;
+        if (this.labels == null) { this.labels = [""]; }
+        this.dataField = curMode.data_field;
+        this.size = this.labels.length;
+        // Loop through all grid labels and assign the centre coordinates
+        this.gridCenters = {};
+        for(var i=0; i<this.size; i++) {
+            var cur_row = Math.floor(i / this.gridDimensions.columns);    // indexed starting at zero
+            var cur_col = i % this.gridDimensions.columns;    // indexed starting at zero
+            var currentCenter = {
+                x: (2 * cur_col + 1) * (width / (this.gridDimensions.columns * 2)),
+                y: (2 * cur_row + 1) * (height / (this.gridDimensions.rows * 2))
+            };
+            this.gridCenters[this.labels[i]] = currentCenter;
+        }
+    }
+    if (this.type == "scatterplot") {
+        // Set up the x and y scales (domains need to be set using the actual data)
+        this.xDataField = curMode.x_data_field;
+        this.yDataField = curMode.y_data_field;
+        this.xFormatString = curMode.x_format_string;
+        this.yFormatString = curMode.y_format_string;
     }
 };
 

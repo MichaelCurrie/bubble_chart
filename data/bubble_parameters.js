@@ -7,6 +7,7 @@ var BUBBLE_PARAMETERS = {
   "force_strength": 0.03,
   "force_type": "charge",
   "radius_field": "Population",
+  "numeric_fields": ["Area", "Population", "Density"],
   "fill_color": {
     "data_field": "Density Level",
     "color_groups": {
@@ -52,9 +53,10 @@ var BUBBLE_PARAMETERS = {
       "button_text": "Area vs. Population",
       "button_id": "area_vs_population",
       "type": "scatterplot",
-      "labels": ["low", "medium", "high"],
-      "grid_dimensions": {"rows": 1, "columns": 3},
-      "data_field": "Density Level"
+      "x_data_field": "Area",
+      "y_data_field": "Population",
+      "x_format_string": ",.2r",
+      "y_format_string": ",.2r"
     }
   ]
 };
