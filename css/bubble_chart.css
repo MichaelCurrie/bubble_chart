@@ -67,3 +67,9 @@ a, a:visited, a:active {
 .footer {
   text-align: center;
 }
+
+.world_map {
+  stroke: white;
+  stroke-width: 0.25px;
+  fill: grey;
+}

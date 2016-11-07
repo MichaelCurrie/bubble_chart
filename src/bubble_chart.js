@@ -30,6 +30,9 @@ function createBubbleChart() {
     var yAxis = null;
     var xScale = null;
     var yScale = null;
+    // For the map
+    var bubbleMercProjection = d3.geoMercator()
+        .rotate([-180, 0]);
 
     function getFillColorScale() {
         // Obtain a color mapping from keys to color values specified in our parameters file
@@ -178,7 +181,7 @@ function createBubbleChart() {
             if (i > 0) {
                 content += '<br/>';
             }
-            content += '<span class="name">'    + cur_tooltip.title + ': </span>';
+            content += '<span class="name">'  + cur_tooltip.title + ': </span>';
             content += '<span class="value">' + value_formatted     + '</span>';
         }        
 
@@ -357,6 +360,11 @@ function createBubbleChart() {
 
         // Initialize svg and inner_svg, which we will attach all our drawing objects to.
         createCanvas(parentDOMElement);
+
+        // Create a container for the map before creating the bubbles
+        // Then we will draw the map inside this container, so it will appear behind the bubbles
+        inner_svg.append("g")
+            .attr("class", "world_map_container");
         
         // Create the bubbles and the force holding them apart
         createBubbles();
@@ -378,7 +386,9 @@ function createBubbleChart() {
         // Remove current debugging elements
         inner_svg.selectAll('.mc_debug').remove(); // DEBUG
         // Remove axes components
-        inner_svg.selectAll('.axis').remove(); // DEBUG
+        inner_svg.selectAll('.axis').remove();
+        // Remove map
+        inner_svg.selectAll('.world_map').remove();
 
         // SHOW LABELS (if we have more than one category to label)
         if (currentMode.type == "grid" && currentMode.size > 1) {
@@ -393,10 +403,34 @@ function createBubbleChart() {
                 .domain([dataExtents[currentMode.yDataField][0], dataExtents[currentMode.yDataField][1]]);
             
             showAxis(currentMode);
-
+        }
+        // ADD FORCE LAYOUT
+        if (currentMode.type == "scatterplot" || currentMode.type == "map") {
             addForceLayout(true);  // make it static so we can plot bubbles
         } else {
             addForceLayout(false); // the bubbles should repel about the grid centers
+        }
+
+        // SHOW MAP (if our mode is "map")
+        if (currentMode.type == "map") {
+            var path = d3.geoPath().projection(bubbleMercProjection);
+
+            d3.queue()
+                .defer(d3.json, "data/world-110m2.json")
+                .await(ready);
+
+                function ready(error, topology) {
+                  if (error) throw error;
+
+                  inner_svg.selectAll(".world_map_container")
+                    .append("g")
+                    .attr("class", "world_map")
+                    .selectAll("path")
+                    .data(topojson.feature(topology, topology.objects.countries).features)
+                    .enter()
+                    .append("path")
+                    .attr("d", path);
+                }
         }
         
         // MOVE BUBBLES TO THEIR NEW LOCATIONS
@@ -409,6 +443,14 @@ function createBubbleChart() {
                 return { 
                     x: xScale(d[currentMode.xDataField]),
                     y: yScale(d[currentMode.yDataField])
+                };
+            };
+        }
+        if (currentMode.type == "map") {
+            targetFunction = function (d) {
+                return {
+                    x: bubbleMercProjection([+d.Longitude, +d.Latitude])[0],
+                    y: bubbleMercProjection([+d.Longitude, +d.Latitude])[1]
                 };
             };
         }
@@ -485,6 +527,10 @@ function ViewMode(button_id, width, height) {
         this.yDataField = curMode.y_data_field;
         this.xFormatString = curMode.x_format_string;
         this.yFormatString = curMode.y_format_string;
+    }
+    if (this.type == "map") {
+        this.latitudeField = curMode.latitude_field;
+        this.longitudeField = curMode.longitude_field;
     }
 };
 

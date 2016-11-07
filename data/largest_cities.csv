@@ -1,126 +1,126 @@
-id,City,Country,Region,Population,Area,Density,Density Level,
-1,Mumbai,India,Asia (Ex. Near East),14350000,484,29649,high,
-2,Kolkata,India,Asia (Ex. Near East),12700000,531,23917,high,
-3,Karachi,Pakistan,Asia (Ex. Near East),9800000,518,18919,high,
-4,Lagos,Nigeria,Sub-Saharan Africa,13400000,738,18157,high,
-5,Shenzhen,China,Asia (Ex. Near East),8000000,466,17167,high,
-6,Seoul/Incheon,South Korea,Asia (Ex. Near East),17500000,1049,16683,high,
-7,Taipei,Taiwan,Asia (Ex. Near East),5700000,376,15160,high,
-8,Chennai,India,Asia (Ex. Near East),5950000,414,14372,high,
-9,Bogota,Colombia,Latin Amer. & Carib,7000000,518,13514,high,
-10,Shanghai,China,Asia (Ex. Near East),10000000,746,13405,high,
-11,Lima,Peru,Latin Amer. & Carib,7000000,596,11745,high,
-12,Beijing,China,Asia (Ex. Near East),8614000,748,11516,high,
-13,Delhi,India,Asia (Ex. Near East),14300000,1295,11042,high,
-14,Kinshasa,"Congo, Dem. Rep.",Sub-Saharan Africa,5000000,469,10661,high,
-15,Tehran,Iran,Asia (Ex. Near East),7250000,686,10569,high,
-16,Manila,Philippines,Asia (Ex. Near East),14750000,1399,10543,high,
-17,Tianjin,China,Asia (Ex. Near East),4750000,453,10486,high,
-18,Jakarta,Indonesia,Asia (Ex. Near East),14250000,1360,10478,high,
-19,Bangalore,India,Asia (Ex. Near East),5400000,534,10112,high,
-20,Ho Chi Minh City,Vietnam,Asia (Ex. Near East),4900000,518,9459,medium,
-21,Cairo,Egypt,Northern Africa,12200000,1295,9421,medium,
-22,Shenyang,China,Asia (Ex. Near East),4200000,453,9272,medium,
-23,Baghdad,Iraq,Near East,5500000,596,9228,medium,
-24,Hyderabad,India,Asia (Ex. Near East),5300000,583,9091,medium,
-25,Sao Paulo,Brazil,Latin Amer. & Carib,17700000,1968,8994,medium,
-26,St Petersburg,Russia,Former Soviet States,5300000,622,8521,medium,
-27,Mexico City,Mexico,Latin Amer. & Carib,17400000,2072,8398,medium,
-28,Santiago,Chile,Latin Amer. & Carib,5425000,648,8372,medium,
-29,Singapore,Singapore,Asia (Ex. Near East),4000000,479,8351,medium,
-30,Lahore,Pakistan,Asia (Ex. Near East),5100000,622,8199,medium,
-31,Recife,Brazil,Latin Amer. & Carib,3025000,376,8045,medium,
-32,Istanbul,Turkey,Near East,9000000,1166,7719,medium,
-33,Dalian,China,Asia (Ex. Near East),2750000,389,7069,medium,
-34,Khartoum,Sudan,Sub-Saharan Africa,4000000,583,6861,medium,
-35,Rio de Janeiro,Brazil,Latin Amer. & Carib,10800000,1580,6835,medium,
-36,Monterey,Mexico,Latin Amer. & Carib,3200000,479,6681,medium,
-37,Bangkok,Thailand,Asia (Ex. Near East),6500000,1010,6436,medium,
-38,Osaka/Kobe/Kyoto,Japan,Asia (Ex. Near East),16425000,2564,6406,medium,
-39,Guadalajara,Mexico,Latin Amer. & Carib,3500000,596,5872,medium,
-40,Athens,Greece,Western Europe,3685000,684,5387,medium,
-41,Ankara,Turkey,Near East,3100000,583,5317,medium,
-42,Madrid,Spain,Western Europe,4900000,945,5185,medium,
-43,London,United Kingdom,Western Europe,8278000,1623,5100,medium,
-44,Tel Aviv,Israel,Near East,2300000,453,5077,medium,
-45,Sapporo,Japan,Asia (Ex. Near East),2075000,414,5012,medium,
-46,Buenos Aires,Argentina,Latin Amer. & Carib,11200000,2266,4943,medium,
-47,Moscow,Russia,Former Soviet States,10500000,2150,4884,medium,
-48,Barcelona,Spain,Western Europe,3900000,803,4857,medium,
-49,Porto Alegre,Brazil,Latin Amer. & Carib,2800000,583,4803,medium,
-50,Tokyo/Yokohama,Japan,Asia (Ex. Near East),33200000,6993,4748,medium,
-51,Belo Horizonte,Brazil,Latin Amer. & Carib,4000000,868,4608,medium,
-52,Fortaleza,Brazil,Latin Amer. & Carib,2650000,583,4545,medium,
-53,Warsaw,Poland,Eastern Europe,2000000,466,4292,medium,
-54,Tashkent,Uzbekistan,Former Soviet States,2200000,531,4143,medium,
-55,Naples,Italy,Western Europe,2400000,583,4117,medium,
-56,Katowice,Poland,Eastern Europe,2200000,544,4044,medium,
-57,Manchester,United Kingdom,Western Europe,2245000,558,4023,medium,
-58,Fukuoka,Japan,Asia (Ex. Near East),2150000,544,3952,medium,
-59,Cape Town,South Africa,Sub-Saharan Africa,2700000,686,3936,medium,
-60,Taichung,Taiwan,Asia (Ex. Near East),2000000,510,3922,medium,
-61,Baku/Sumqayit,Azerbaijan,Former Soviet States,2100000,544,3860,medium,
-62,Curitiba,Brazil,Latin Amer. & Carib,2500000,648,3858,medium,
-63,Birmingham,United Kingdom,Western Europe,2284000,600,3807,medium,
-64,Berlin,Germany,Western Europe,3675000,984,3735,medium,
-65,Riyadh,Saudi Arabia,Near East,4000000,1101,3633,medium,
-66,Campinas,Brazil,Latin Amer. & Carib,1750000,492,3557,medium,
-67,Paris,France,Western Europe,9645000,2723,3542,medium,
-68,Jeddah,Saudi Arabia,Near East,2750000,777,3539,medium,
-69,Durban,South Africa,Sub-Saharan Africa,2900000,829,3498,medium,
-70,Vienna,Austria,Western Europe,1550000,453,3422,medium,
-71,Accra,Ghana,Sub-Saharan Africa,1500000,453,3311,medium,
-72,Nagoya,Japan,Asia (Ex. Near East),9000000,2875,3130,medium,
-73,Munich,Germany,Western Europe,1600000,518,3089,medium,
-74,Rome,Italy,Western Europe,2500000,842,2969,low,
-75,Kuwait,Kuwait,Near East,1600000,544,2941,low,
-76,Brasilia,Brazil,Latin Amer. & Carib,1625000,583,2787,low,
-77,Essen/Dï¿½sseldorf,Germany,Western Europe,7350000,2642,2782,low,
-78,Beirut,Lebanon,Near East,1800000,648,2778,low,
-79,Pretoria,South Africa,Sub-Saharan Africa,1850000,673,2749,low,
-80,Kuala Lumpur,Malaysia,Asia (Ex. Near East),4400000,1606,2740,low,
-81,Milan,Italy,Western Europe,4250000,1554,2735,low,
-82,Los Angeles,United States,North America,11789000,4320,2729,low,
-83,Dubai,UAE,Near East,1900000,712,2669,low,
-84,Toronto,Canada,North America,4367000,1655,2639,low,
-85,Budapest,Hungary,Eastern Europe,1800000,702,2564,low,
-86,Lisbon,Portugal,Western Europe,2250000,881,2554,low,
-87,Johannesburg/East Rand,South Africa,Sub-Saharan Africa,6000000,2396,2504,low,
-88,Harare,Zimbabwe,Sub-Saharan Africa,1750000,712,2458,low,
-89,Cologne/Bonn,Germany,Western Europe,1960000,816,2402,low,
-90,San Francisco/Oakland,United States,North America,3229000,1365,2366,low,
-91,Hamburg,Germany,Western Europe,1925000,829,2322,low,
-92,Frankfurt,Germany,Western Europe,2260000,984,2297,low,
-93,San Jose,United States,North America,1538000,674,2282,low,
-94,Damman,Saudi Arabia,Near East,1525000,673,2266,low,
-95,Brussels,Belgium,Western Europe,1570000,712,2205,low,
-96,Sydney,Australia,Oceania,3502000,1687,2076,low,
-97,New York Metro,United States,North America,17800000,8683,2050,low,
-98,Copenhagen,Denmark,Western Europe,1525000,816,1869,low,
-99,Montreal.,Canada,North America,3216000,1740,1848,low,
-100,Miami,United States,North America,4919000,2891,1701,low,
-101,Vancouver,Canada,North America,1830000,1120,1634,low,
-102,Denver,United States,North America,1985000,1292,1536,low,
-103,Melbourne,Australia,Oceania,3162000,2080,1520,low,
-104,Chicago,United States,North America,8308000,5498,1511,low,
-105,Phoenix/Mesa,United States,North America,2907000,2069,1405,low,
-106,Riverside/San Bernardino,United States,North America,1507000,1136,1327,low,
-107,San Diego,United States,North America,2674000,2026,1320,low,
-108,Washington,United States,North America,3934000,2996,1313,low,
-109,Portland,United States,North America,1583000,1228,1289,low,
-110,Detroit,United States,North America,3903000,3267,1195,low,
-111,Baltimore,United States,North America,2076000,1768,1174,low,
-112,Houston,United States,North America,3823000,3355,1139,low,
-113,Dallas/Fort Worth,United States,North America,4146000,3644,1138,low,
-114,Philadelphia,United States,North America,5149000,4661,1105,low,
-115,Seattle,United States,North America,2712000,2470,1098,low,
-116,Cleveland,United States,North America,1787000,1676,1066,low,
-117,Minneapolis/St. Paul,United States,North America,2389000,2316,1032,low,
-118,Tampa/St. Petersburg,United States,North America,2062000,2078,992,low,
-119,St. Louis,United States,North America,2078000,2147,968,low,
-120,San Juan,Puerto Rico,Latin Amer. & Carib,2217000,2309,960,low,
-121,Brisbane,Australia,Oceania,1508000,1603,941,low,
-122,Boston,United States,North America,4032000,4497,897,low,
-123,Cincinnati,United States,North America,1503000,1740,864,low,
-124,Pittsburgh,United States,North America,1753000,2208,794,low,
-125,Atlanta,United States,North America,3500000,5083,689,low,
+id,City,Country,Region,Population,Area,Density,Density Level,Latitude,Longitude
+1,Mumbai,India,Asia (Ex. Near East),14350000,484,29649,high,19.01699038,72.8569893
+2,Kolkata,India,Asia (Ex. Near East),12700000,531,23917,high,22.4949693,88.32467566
+3,Karachi,Pakistan,Asia (Ex. Near East),9800000,518,18919,high,24.86999229,66.99000891
+4,Lagos,Nigeria,Sub-Saharan Africa,13400000,738,18157,high,6.443261653,3.391531071
+5,Shenzhen,China,Asia (Ex. Near East),8000000,466,17167,high,22.55237051,114.1221231
+6,Seoul,South Korea,Asia (Ex. Near East),17500000,1049,16683,high,37.5663491,126.999731
+7,Taipei,Taiwan,Asia (Ex. Near East),5700000,376,15160,high,25.03583333,121.5683333
+8,Chennai,India,Asia (Ex. Near East),5950000,414,14372,high,13.08998781,80.27999874
+9,Bogota,Colombia,Latin Amer. & Carib,7000000,518,13514,high,4.596423563,-74.08334396
+10,Shanghai,China,Asia (Ex. Near East),10000000,746,13405,high,31.21645245,121.4365047
+11,Lima,Peru,Latin Amer. & Carib,7000000,596,11745,high,-12.04801268,-77.05006209
+12,Beijing,China,Asia (Ex. Near East),8614000,748,11516,high,39.92889223,116.3882857
+13,Delhi,India,Asia (Ex. Near East),14300000,1295,11042,high,28.6699929,77.23000403
+14,Kinshasa,"Congo, Dem. Rep.",Sub-Saharan Africa,5000000,469,10661,high,-4.329724102,15.31497188
+15,Tehran,Iran,Asia (Ex. Near East),7250000,686,10569,high,35.67194277,51.42434403
+16,Manila,Philippines,Asia (Ex. Near East),14750000,1399,10543,high,14.60415895,120.9822172
+17,Tianjin,China,Asia (Ex. Near East),4750000,453,10486,high,39.13002626,117.2000191
+18,Jakarta,Indonesia,Asia (Ex. Near East),14250000,1360,10478,high,-6.174417705,106.8294376
+19,Bangalore,India,Asia (Ex. Near East),5400000,534,10112,high,12.96999514,77.56000972
+20,Ho Chi Minh City,Vietnam,Asia (Ex. Near East),4900000,518,9459,medium,10.78002545,106.6950272
+21,Cairo,Egypt,Northern Africa,12200000,1295,9421,medium,30.04996035,31.24996822
+22,Shenyang,China,Asia (Ex. Near East),4200000,453,9272,medium,41.805699,123.431472
+23,Baghdad,Iraq,Near East,5500000,596,9228,medium,33.3386485,44.39386877
+24,Hyderabad,India,Asia (Ex. Near East),5300000,583,9091,medium,17.39998313,78.47995357
+25,Sao Paulo,Brazil,Latin Amer. & Carib,17700000,1968,8994,medium,-23.55867959,-46.62501998
+26,St. Petersburg,Russia,Former Soviet States,5300000,622,8521,medium,59.93901451,30.31602006
+27,Mexico City,Mexico,Latin Amer. & Carib,17400000,2072,8398,medium,19.44244244,-99.1309882
+28,Santiago,Chile,Latin Amer. & Carib,5425000,648,8372,medium,-33.45001382,-70.66704085
+29,Singapore,Singapore,Asia (Ex. Near East),4000000,479,8351,medium,1.293033466,103.8558207
+30,Lahore,Pakistan,Asia (Ex. Near East),5100000,622,8199,medium,31.55997154,74.35002478
+31,Recife,Brazil,Latin Amer. & Carib,3025000,376,8045,medium,-8.075645326,-34.91560551
+32,Istanbul,Turkey,Near East,9000000,1166,7719,medium,41.10499615,29.01000159
+33,Dalian,China,Asia (Ex. Near East),2750000,389,7069,medium,38.92283839,121.6298308
+34,Khartoum,Sudan,Sub-Saharan Africa,4000000,583,6861,medium,15.58807823,32.53417924
+35,Rio de Janeiro,Brazil,Latin Amer. & Carib,10800000,1580,6835,medium,-22.92502317,-43.22502079
+36,Monterey,Mexico,Latin Amer. & Carib,3200000,479,6681,medium,36.6002582,-121.8935781
+37,Bangkok,Thailand,Asia (Ex. Near East),6500000,1010,6436,medium,13.74999921,100.5166447
+38,Osaka,Japan,Asia (Ex. Near East),16425000,2564,6406,medium,34.75003522,135.4601448
+39,Guadalajara,Mexico,Latin Amer. & Carib,3500000,596,5872,medium,20.67001609,-103.3300342
+40,Athens,Greece,Western Europe,3685000,684,5387,medium,37.98332623,23.73332108
+41,Ankara,Turkey,Near East,3100000,583,5317,medium,39.92723859,32.86439164
+42,Madrid,Spain,Western Europe,4900000,945,5185,medium,40.40002626,-3.683351686
+43,London,United Kingdom,Western Europe,8278000,1623,5100,medium,42.9699986,-81.24998661
+44,Tel Aviv,Israel,Near East,2300000,453,5077,medium,32.0853,34.781768
+45,Sapporo,Japan,Asia (Ex. Near East),2075000,414,5012,medium,43.07497927,141.3400443
+46,Buenos Aires,Argentina,Latin Amer. & Carib,11200000,2266,4943,medium,-34.60250161,-58.39753137
+47,Moscow,Russia,Former Soviet States,10500000,2150,4884,medium,55.75216412,37.61552283
+48,Barcelona,Spain,Western Europe,3900000,803,4857,medium,41.38329958,2.183370319
+49,Porto Alegre,Brazil,Latin Amer. & Carib,2800000,583,4803,medium,-30.05001463,-51.20001205
+50,Tokyo,Japan,Asia (Ex. Near East),33200000,6993,4748,medium,35.68501691,139.7514074
+51,Belo Horizonte,Brazil,Latin Amer. & Carib,4000000,868,4608,medium,-19.91502602,-43.91500452
+52,Fortaleza,Brazil,Latin Amer. & Carib,2650000,583,4545,medium,-3.750017884,-38.57998132
+53,Warsaw,Poland,Eastern Europe,2000000,466,4292,medium,52.25000063,20.99999955
+54,Tashkent,Uzbekistan,Former Soviet States,2200000,531,4143,medium,41.31170188,69.29493282
+55,Naples,Italy,Western Europe,2400000,583,4117,medium,40.84002525,14.24501135
+56,Katowice,Poland,Eastern Europe,2200000,544,4044,medium,50.26038047,19.02001705
+57,Manchester,United Kingdom,Western Europe,2245000,558,4023,medium,53.50041526,-2.247987103
+58,Fukuoka,Japan,Asia (Ex. Near East),2150000,544,3952,medium,33.59501528,130.4100138
+59,Cape Town,South Africa,Sub-Saharan Africa,2700000,686,3936,medium,-33.92001097,18.43498816
+60,Taichung,Taiwan,Asia (Ex. Near East),2000000,510,3922,medium,24.15207745,120.681667
+61,Baku,Azerbaijan,Former Soviet States,2100000,544,3860,medium,40.39527203,49.86221716
+62,Curitiba,Brazil,Latin Amer. & Carib,2500000,648,3858,medium,-25.420013,-49.3199976
+63,Birmingham,United Kingdom,Western Europe,2284000,600,3807,medium,52.47497398,-1.919996787
+64,Berlin,Germany,Western Europe,3675000,984,3735,medium,52.52181866,13.40154862
+65,Riyadh,Saudi Arabia,Near East,4000000,1101,3633,medium,24.64083315,46.77274166
+66,Campinas,Brazil,Latin Amer. & Carib,1750000,492,3557,medium,-22.90001178,-47.10002975
+67,Paris,France,Western Europe,9645000,2723,3542,medium,48.86669293,2.333335326
+68,Jeddah,Saudi Arabia,Near East,2750000,777,3539,medium,21.51688946,39.21919755
+69,Durban,South Africa,Sub-Saharan Africa,2900000,829,3498,medium,-29.865013,30.98001054
+70,Vienna,Austria,Western Europe,1550000,453,3422,medium,48.20001528,16.36663896
+71,Accra,Ghana,Sub-Saharan Africa,1500000,453,3311,medium,5.550034606,-0.21671574
+72,Nagoya,Japan,Asia (Ex. Near East),9000000,2875,3130,medium,35.15499758,136.9149914
+73,Munich,Germany,Western Europe,1600000,518,3089,medium,48.12994204,11.57499345
+74,Rome,Italy,Western Europe,2500000,842,2969,low,41.89595563,12.48325842
+75,Kuwait,Kuwait,Near East,1600000,544,2941,low,29.36971763,47.97830115
+76,Brasilia,Brazil,Latin Amer. & Carib,1625000,583,2787,low,-15.78334023,-47.91605229
+77,Essen,Germany,Western Europe,7350000,2642,2782,low,51.44999778,7.016615355
+78,Beirut,Lebanon,Near East,1800000,648,2778,low,33.87197512,35.50970821
+79,Pretoria,South Africa,Sub-Saharan Africa,1850000,673,2749,low,-25.70692055,28.22942908
+80,Kuala Lumpur,Malaysia,Asia (Ex. Near East),4400000,1606,2740,low,3.166665872,101.6999833
+81,Milan,Italy,Western Europe,4250000,1554,2735,low,45.4699752,9.20500891
+82,Los Angeles,United States,North America,11789000,4320,2729,low,-37.46000161,-72.35998661
+83,Dubai,UAE,Near East,1900000,712,2669,low,25.22999615,55.27997432
+84,Toronto,Canada,North America,4367000,1655,2639,low,43.69997988,-79.42002079
+85,Budapest,Hungary,Eastern Europe,1800000,702,2564,low,47.50000633,19.08332068
+86,Lisbon,Portugal,Western Europe,2250000,881,2554,low,38.72272288,-9.144866305
+87,Johannesburg,South Africa,Sub-Saharan Africa,6000000,2396,2504,low,-26.17004474,28.03000972
+88,Harare,Zimbabwe,Sub-Saharan Africa,1750000,712,2458,low,-17.81778969,31.04470943
+89,Cologne,Germany,Western Europe,1960000,816,2402,low,50.93000368,6.950004434
+90,San Francisco,United States,North America,3229000,1365,2366,low,-31.43003375,-62.08996749
+91,Hamburg,Germany,Western Europe,1925000,829,2322,low,53.55002464,9.999999144
+92,Frankfurt,Germany,Western Europe,2260000,984,2297,low,50.09997683,8.67501542
+93,San Jose,United States,North America,1538000,674,2282,low,9.93501243,-84.08405135
+94,Dammam,Saudi Arabia,Near East,1525000,673,2266,low,26.392667,49.977714
+95,Brussels,Belgium,Western Europe,1570000,712,2205,low,50.83331708,4.333316608
+96,Sydney,Australia,Oceania,3502000,1687,2076,low,-33.92001097,151.1851798
+97,New York,United States,North America,17800000,8683,2050,low,40.74997906,-73.98001693
+98,Copenhagen,Denmark,Western Europe,1525000,816,1869,low,55.676097,12.568337
+99,Montréal,Canada,North America,3216000,1740,1848,low,45.49999921,-73.58329696
+100,Miami,United States,North America,4919000,2891,1701,low,25.7876107,-80.22410608
+101,Vancouver,Canada,North America,1830000,1120,1634,low,49.27341658,-123.1216442
+102,Denver,United States,North America,1985000,1292,1536,low,39.73918805,-104.984016
+103,Melbourne,Australia,Oceania,3162000,2080,1520,low,-37.82003131,144.9750162
+104,Chicago,United States,North America,8308000,5498,1511,low,41.82999066,-87.75005497
+105,Phoenix,United States,North America,2907000,2069,1405,low,33.53997988,-112.0699917
+106,Riverside,United States,North America,1507000,1136,1327,low,33.94194501,-117.3980386
+107,San Diego,United States,North America,2674000,2026,1320,low,32.82002382,-117.1799899
+108,"Washington, D.C.",United States,North America,3934000,2996,1313,low,38.89954938,-77.00941858
+109,Portland,United States,North America,1583000,1228,1289,low,-38.33999957,141.5900032
+110,Detroit,United States,North America,3903000,3267,1195,low,42.32996014,-83.08005579
+111,Baltimore,United States,North America,2076000,1768,1174,low,39.29999005,-76.61998499
+112,Houston,United States,North America,3823000,3355,1139,low,29.81997438,-95.33997929
+113,Dallas,United States,North America,4146000,3644,1138,low,32.82002382,-96.84001693
+114,Philadelphia,United States,North America,5149000,4661,1105,low,39.99997316,-75.16999597
+115,Seattle,United States,North America,2712000,2470,1098,low,47.57000205,-122.339985
+116,Cleveland,United States,North America,1787000,1676,1066,low,41.4699868,-81.69499821
+117,Minneapolis,United States,North America,2389000,2316,1032,low,44.97997927,-93.25178634
+118,Tampa,United States,North America,2062000,2078,992,low,27.94698793,-82.45862085
+119,St. Louis,United States,North America,2078000,2147,968,low,38.63501772,-90.23998051
+120,San Juan,Puerto Rico,Latin Amer. & Carib,2217000,2309,960,low,-31.55002643,-68.51998845
+121,Brisbane,Australia,Oceania,1508000,1603,941,low,-27.45503091,153.0350927
+122,Boston,United States,North America,4032000,4497,897,low,42.32996014,-71.07001367
+123,Cincinnati,United States,North America,1503000,1740,864,low,39.16188479,-84.45692265
+124,Pittsburgh,United States,North America,1753000,2208,794,low,40.4299986,-79.99998539
+125,Atlanta,United States,North America,3500000,5083,689,low,33.83001385,-84.39994938
