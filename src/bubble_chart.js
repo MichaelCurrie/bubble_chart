@@ -284,7 +284,7 @@ function createBubbleChart() {
         // Configure the force layout holding the bubbles apart
         forceSim = d3.forceSimulation()
             .nodes(nodes)
-            .velocityDecay(0.2)
+            .velocityDecay(0.3)
             .on("tick", ticked);
         
         if (!isStatic) {
