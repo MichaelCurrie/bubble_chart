@@ -2,6 +2,8 @@
 
 Create animated bubble charts using D3.js.
 
+[Demo available here.](https://bl.ocks.org/MichaelCurrie/raw/5e2da378a53ea624082cb55e78fdfa05/#)
+
 ![](bubble%20demo.gif?raw=true)
 
 Based directly on Jim Vallandingham's work [in this repo](https://github.com/vlandham/bubble_chart) and described at [his blog](http://vallandingham.me/bubble_charts_in_js.html).
